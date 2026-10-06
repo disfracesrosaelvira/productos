@@ -27,8 +27,8 @@ jobs:
       VITE_BASE: /${{ github.event.repository.name }}/
       VITE_SUPABASE_URL: https://zlcjzgpcswigxulsplpp.supabase.co
       VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsY2p6Z3Bjc3dpZ3h1bHNwbHBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExNjYyNzgsImV4cCI6MjEwNjc0MjI3OH0.recsv95eKafzOWxBGwi-hN2aXGDRkaJlKvOo5z_B03E
-      # Se actualiza con la URL publica del backend en Railway:
-      VITE_API_URL: ${{ vars.VITE_API_URL }}
+      # URL publica del backend en Railway
+      VITE_API_URL: https://productos-production-8443.up.railway.app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
