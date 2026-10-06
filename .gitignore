@@ -1,0 +1,32 @@
+# Entorno / secretos
+.env
+.env.*
+!.env.example
+
+# Fotos originales (ya estan cargadas en Supabase Storage)
+FotosDisfraces/
+
+# Word / temporales
+~lock.*
+~$*.docx
+*.log
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+build/
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Supabase local
+supabase/.temp/

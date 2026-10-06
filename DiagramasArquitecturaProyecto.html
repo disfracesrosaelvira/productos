@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Diagramas - Inventario de Disfraces</title>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+</script>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+  h1 { color: #333; }
+  h2 { color: #555; margin-top: 40px; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+  .diagrama { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow-x: auto; }
+  .tip { background: #fffbe6; padding: 10px; border-left: 4px solid #f0c000; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<h1>📐 Diagramas del Proyecto - Inventario de Disfraces</h1>
+<div class="tip">💡 Haz clic derecho sobre cada diagrama → "Guardar imagen como..." o toma captura para pegarlo en Word.</div>
+
+<h2>1. Arquitectura de Alto Nivel</h2>
+<div class="diagrama">
+<pre class="mermaid">
+flowchart TB
+    subgraph Users["👥 Usuarios"]
+        U1["Personal de inventario"]
+        U2["Cliente final (futuro)"]
+    end
+    subgraph FE["🌐 Frontend - GitHub Pages"]
+        SV["App Svelte + Vite"]
+    end
+    subgraph BE["🐍 Backend - Railway / Render"]
+        API["Fastify API (Node.js)"]
+    end
+    subgraph SB["☁️ Supabase"]
+        PG[("PostgreSQL")]
+        ST["Storage - 2,000 fotos"]
+        RT["Realtime - WebSockets"]
+        AU["Auth"]
+    end
+    U1 --> SV
+    U2 -.-> SV
+    SV -- "REST + JWT" --> API
+    SV -- "Realtime directo" --> RT
+    SV -- "Upload fotos" --> ST
+    API --> PG
+    API --> ST
+    API --> AU
+    PG -- "eventos" --> RT
+</pre>
+</div>
+
+<h2>2. Flujo de Subida de Fotos en Tiempo Real</h2>
+<div class="diagrama">
+<pre class="mermaid">
+sequenceDiagram
+    participant U as Usuario
+    participant S as Svelte
+    participant ST as Supabase Storage
+    participant API as Node API
+    participant DB as PostgreSQL
+    participant RT as Realtime
+    U->>S: Selecciona foto del móvil
+    S->>S: Comprime (browser-image-compression)
+    S->>ST: upload() directo
+    ST-->>S: URL pública
+    S->>API: POST /products con URL
+    API->>DB: INSERT producto
+    DB->>RT: Evento INSERT
+    RT-->>S: Notificación WebSocket
+    S-->>U: UI actualizada sin recargar
+</pre>
+</div>
+
+<h2>3. Flujo de Stock en Tiempo Real (Ventas)</h2>
+<div class="diagrama">
+<pre class="mermaid">
+sequenceDiagram
+    participant V as Vendedor
+    participant S as Svelte
+    participant API as Node API
+    participant DB as PostgreSQL
+    participant RT as Realtime
+    participant C as Otros clientes conectados
+    V->>S: Registrar venta
+    S->>API: POST /sales
+    API->>DB: INSERT sales + sale_items
+    DB->>DB: TRIGGER resta stock_quantity
+    DB->>RT: Evento UPDATE en variants
+    RT-->>S: WebSocket notificación
+    RT-->>C: WebSocket notificación
+    S-->>V: Confirmación visual
+    C-->>C: UI actualizada sin recargar
+</pre>
+</div>
+
+<h2>4. Componentes de Bajo Nivel</h2>
+<div class="diagrama">
+<pre class="mermaid">
+flowchart LR
+    subgraph FE["Frontend Svelte"]
+        A1["Login"]
+        A2["Lista disfraces"]
+        A3["Detalle"]
+        A4["Subir fotos"]
+        A5["Registrar venta"]
+        A6["Realtime listener"]
+    end
+    subgraph BE["Backend Fastify"]
+        B1["Auth middleware"]
+        B2["/products"]
+        B3["/variants"]
+        B4["/sales"]
+        B5["/reports"]
+        B6["sharp - imágenes"]
+    end
+    subgraph SB["Supabase"]
+        C1["PostgreSQL"]
+        C2["Storage"]
+        C3["Realtime"]
+        C4["Auth"]
+        C5["pg_cron"]
+    end
+    A1 --> C4
+    A2 --> B2
+    A3 --> B2
+    A4 --> C2
+    A4 --> B2
+    A5 --> B4
+    A6 --> C3
+    B2 --> C1
+    B3 --> C1
+    B4 --> C1
+    B5 --> C1
+    B6 --> C2
+    C5 --> C1
+</pre>
+</div>
+
+<h2>5. Modelo de Datos (ER)</h2>
+<div class="diagrama">
+<pre class="mermaid">
+erDiagram
+    CATEGORIES ||--o{ PRODUCTS : contiene
+    PRODUCTS ||--o{ VARIANTS : tiene
+    PRODUCTS ||--o{ PRODUCT_IMAGES : tiene
+    PRODUCTS ||--o{ PRODUCT_TAGS : tiene
+    TAGS ||--o{ PRODUCT_TAGS : etiqueta
+    VARIANTS ||--o{ SALE_ITEMS : vendido
+    SALES ||--o{ SALE_ITEMS : incluye
+    PROFILES ||--o{ SALES : registra
+
+    PRODUCTS {
+        uuid id PK
+        string name
+        string description
+        string image_url
+        timestamp created_at
+    }
+    CATEGORIES {
+        uuid id PK
+        string name
+        uuid parent_id FK
+    }
+    VARIANTS {
+        uuid id PK
+        uuid product_id FK
+        string size
+        string gender
+        string fabric_quality
+        string sku
+        int stock_quantity
+    }
+    PRODUCT_IMAGES {
+        uuid id PK
+        uuid product_id FK
+        string image_url
+        bool is_primary
+    }
+    TAGS {
+        uuid id PK
+        string name
+    }
+    PRODUCT_TAGS {
+        uuid product_id FK
+        uuid tag_id FK
+    }
+    SALES {
+        uuid id PK
+        date date
+        decimal total_amount
+        uuid user_id FK
+    }
+    SALE_ITEMS {
+        uuid id PK
+        uuid sale_id FK
+        uuid variant_id FK
+        int quantity
+        decimal unit_price
+    }
+    PROFILES {
+        uuid id PK
+        string email
+        string role
+    }
+</pre>
+</div>
+
+</body>
+</html>
