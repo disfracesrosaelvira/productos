@@ -9,6 +9,11 @@ FotosDisfraces/
 # Proyecto ajeno (no forma parte del inventario)
 ProyectoAplicativoMerchBackus/
 
+# Capturas / imagenes sueltas en la raiz del proyecto
+/*.jpeg
+/*.jpg
+/*.png
+
 # Word / temporales
 ~lock.*
 ~$*.docx
