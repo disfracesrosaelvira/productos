@@ -11,7 +11,7 @@
   const GENEROS = [
     { valor: 'hombre', texto: 'Hombre' },
     { valor: 'mujer', texto: 'Mujer' },
-    { valor: 'unisex', texto: 'UNISEX' },
+    { valor: 'unisex', texto: 'Unisex' },
   ]
 
   let form = $state({ name: '', price: '', category_id: '', active: true })
@@ -20,6 +20,8 @@
   let cantidad = $state(1)
   let conComentario = $state(false)
   let comentario = $state('')
+  let conTela = $state(false)
+  let tela = $state('')
 
   let categorias = $state([])
   let fotosExistentes = $state([])
@@ -65,11 +67,12 @@
       }
       const prod = esNuevo ? await api.crearProducto(body) : await api.actualizarProducto(id, body)
 
-      if (esNuevo && (talla || genero)) {
+      if (talla || genero || (conTela && tela)) {
         await api.crearVariante({
           product_id: prod.id,
           size: talla || null,
           gender: genero || null,
+          fabric_quality: conTela ? tela || null : null,
           stock_quantity: Number(cantidad) || 0,
         })
       }
@@ -122,7 +125,8 @@
       </label>
     </div>
 
-    {#if esNuevo}
+    <fieldset class="border border-slate-200 rounded-lg p-3 space-y-3">
+      <legend class="text-xs font-medium text-slate-500 px-1">Variante (talla / género / stock)</legend>
       <div class="grid grid-cols-3 gap-4">
         <label class="block">
           <span class="text-sm font-medium">Talla</span>
@@ -150,11 +154,18 @@
             class="mt-1 w-full rounded border border-slate-300 px-3 py-2" />
         </label>
       </div>
-    {:else}
-      <p class="text-xs text-slate-500">
-        Las tallas y el stock se muestran en el detalle del producto.
-      </p>
-    {/if}
+
+      <div class="space-y-2">
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" bind:checked={conTela} />
+          Comentar calidad de la tela (opcional)
+        </label>
+        {#if conTela}
+          <input bind:value={tela} placeholder="Ej: polinan, raso, bordado…"
+            class="w-full rounded border border-slate-300 px-3 py-2" />
+        {/if}
+      </div>
+    </fieldset>
 
     <div class="space-y-2">
       <label class="flex items-center gap-2 text-sm">
