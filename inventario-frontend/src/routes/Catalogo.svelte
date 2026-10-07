@@ -34,6 +34,13 @@
     cargar()
   }
 
+  function limpiar() {
+    q = ''
+    categoria = ''
+    genero = ''
+    cargar()
+  }
+
   onMount(async () => {
     try {
       categorias = await listarCategorias()
@@ -65,13 +72,15 @@
       bind:value={q}
       placeholder="Buscar por nombre…"
       class="flex-1 min-w-[12rem] rounded border border-slate-300 px-3 py-2 text-sm" />
-    <select bind:value={categoria} class="rounded border border-slate-300 px-2 py-2 text-sm">
+    <select bind:value={categoria} onchange={cargar}
+      class="rounded border border-slate-300 px-2 py-2 text-sm">
       <option value="">Todas las categorías</option>
       {#each categorias as c}
         <option value={c.slug}>{c.name}</option>
       {/each}
     </select>
-    <select bind:value={genero} class="rounded border border-slate-300 px-2 py-2 text-sm">
+    <select bind:value={genero} onchange={cargar}
+      class="rounded border border-slate-300 px-2 py-2 text-sm">
       <option value="">Todos los géneros</option>
       <option value="niño">Niño</option>
       <option value="niña">Niña</option>
@@ -79,7 +88,10 @@
       <option value="mujer">Mujer</option>
       <option value="unisex">Unisex</option>
     </select>
-    <button class="rounded bg-slate-700 text-white px-4 py-2 text-sm hover:bg-slate-600">Buscar</button>
+    <button type="button" class="rounded bg-slate-700 text-white px-4 py-2 text-sm hover:bg-slate-600"
+      onclick={cargar}>Buscar</button>
+    <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50"
+      onclick={limpiar}>Limpiar filtros</button>
   </form>
 
   {#if error}
