@@ -4,11 +4,13 @@
   import { navegar } from '../lib/router.svelte.js'
   import { supabase } from '../lib/supabase.js'
   import { soles } from '../lib/format.js'
+  import Lightbox from '../lib/components/Lightbox.svelte'
 
   let { id } = $props()
 
   let producto = $state(null)
   let principal = $state('')
+  let zoomSrc = $state(null)
   let cargando = $state(true)
   let error = $state('')
 
@@ -59,9 +61,15 @@
   {:else if producto}
     <div class="grid md:grid-cols-2 gap-6">
       <div class="space-y-3">
-        <div class="aspect-square bg-slate-100 rounded-lg overflow-hidden">
+        <div class="relative aspect-square bg-slate-100 rounded-lg overflow-hidden">
           {#if principal}
-            <img src={principal} alt={producto.name} class="w-full h-full object-cover" />
+            <button type="button" class="w-full h-full" title="Ampliar imagen"
+              onclick={() => (zoomSrc = principal)}>
+              <img src={principal} alt={producto.name} class="w-full h-full object-contain" />
+            </button>
+            <button type="button"
+              class="absolute top-2 right-2 rounded-full bg-white/90 px-3 py-1 text-sm shadow hover:bg-white"
+              onclick={() => (zoomSrc = principal)}>🔍 Ampliar</button>
           {:else}
             <div class="w-full h-full flex items-center justify-center text-5xl text-slate-300">👗</div>
           {/if}
@@ -132,4 +140,6 @@
       </div>
     </div>
   {/if}
+
+  <Lightbox bind:src={zoomSrc} alt={producto?.name ?? ''} />
 </div>

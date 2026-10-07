@@ -1,10 +1,41 @@
 import { AppError, noEncontrado } from '../lib/errors.js';
 import { supabaseAdmin } from '../lib/supabase.js';
+import { slugify } from '../lib/utils.js';
 
 const SELECT = `
   id, product_id, size, gender, fabric_quality, sku, stock_quantity, created_at, updated_at,
   products ( id, name, image_url, price )
 `;
+
+const GENERO_SKU = { niño: 'NIN', niña: 'NINA', hombre: 'HOM', mujer: 'MUJ', unisex: 'UNI' };
+
+function codigo3(texto) {
+  const limpio = slugify(texto || '').replace(/-/g, '');
+  return (limpio.slice(0, 3) || 'gen').toUpperCase();
+}
+
+// SKU automatico: PREFIJO(categoria o nombre) - GENERO - TALLA  (unico)
+async function generarSku(productId, size, gender) {
+  const { data: producto } = await supabaseAdmin
+    .from('products')
+    .select('name, categories ( slug )')
+    .eq('id', productId)
+    .maybeSingle();
+
+  const prefijo = codigo3(producto?.categories?.slug ?? producto?.name ?? 'sku');
+  const generoCod = GENERO_SKU[gender] ?? 'GEN';
+  const tallaCod = (slugify(size) || 'u').toUpperCase();
+  const base = `${prefijo}-${generoCod}-${tallaCod}`;
+
+  let sku = base;
+  let n = 2;
+  for (;;) {
+    const { data } = await supabaseAdmin.from('variants').select('id').eq('sku', sku).maybeSingle();
+    if (!data) break;
+    sku = `${base}-${n++}`;
+  }
+  return sku;
+}
 
 export async function listVariants(filtros = {}) {
   let query = supabaseAdmin.from('variants').select(SELECT).order('sku', { ascending: true });
@@ -25,6 +56,7 @@ export async function getVariant(id) {
 }
 
 export async function createVariant(input) {
+  const sku = input.sku || (await generarSku(input.product_id, input.size, input.gender));
   const { data, error } = await supabaseAdmin
     .from('variants')
     .insert({
@@ -32,7 +64,7 @@ export async function createVariant(input) {
       size: input.size ?? null,
       gender: input.gender ?? null,
       fabric_quality: input.fabric_quality ?? null,
-      sku: input.sku ?? null,
+      sku,
       stock_quantity: input.stock_quantity ?? 0,
     })
     .select('id')
