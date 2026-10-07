@@ -105,7 +105,7 @@ export async function subirImagen(productId, buffer, { isPrimary = false } = {})
     .select('id', { count: 'exact', head: true })
     .eq('product_id', productId);
 
-  const principal = isPrimary || !count;
+  const principal = isPrimary || !count
 
   if (principal) {
     await supabaseAdmin.from('product_images').update({ is_primary: false }).eq('product_id', productId);
@@ -118,7 +118,7 @@ export async function subirImagen(productId, buffer, { isPrimary = false } = {})
       product_id: productId,
       image_url: url,
       is_primary: principal,
-      position: Date.now(),
+      position: count ?? 0,
     })
     .select()
     .single();

@@ -57,6 +57,10 @@ export const api = {
     ).toString()
     return request(`/variants${qs ? `?${qs}` : ''}`)
   },
+  crearVariante: (body) => request('/variants', { method: 'POST', body: JSON.stringify(body) }),
+  actualizarVariante: (id, body) =>
+    request(`/variants/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  eliminarVariante: (id) => request(`/variants/${id}`, { method: 'DELETE' }),
 
   // --- ventas ---
   crearVenta: (body) => request('/sales', { method: 'POST', body: JSON.stringify(body) }),

@@ -7,7 +7,20 @@
   let { id } = $props()
   const esNuevo = $derived(!id)
 
-  let form = $state({ name: '', description: '', price: '', category_id: '', active: true })
+  const TALLAS = ['S', 'M', '0', '4', '6', '8', '10', '14', '16']
+  const GENEROS = [
+    { valor: 'hombre', texto: 'Hombre' },
+    { valor: 'mujer', texto: 'Mujer' },
+    { valor: 'unisex', texto: 'UNISEX' },
+  ]
+
+  let form = $state({ name: '', price: '', category_id: '', active: true })
+  let talla = $state('')
+  let genero = $state('')
+  let cantidad = $state(1)
+  let conComentario = $state(false)
+  let comentario = $state('')
+
   let categorias = $state([])
   let fotosExistentes = $state([])
   let pendientes = $state([])
@@ -21,11 +34,12 @@
         const p = await api.obtenerProducto(id)
         form = {
           name: p.name,
-          description: p.description ?? '',
           price: p.price ?? '',
           category_id: p.category_id ?? '',
           active: p.active,
         }
+        conComentario = !!p.description
+        comentario = p.description ?? ''
         fotosExistentes = p.product_images ?? []
       } catch (e) {
         error = e.message
@@ -44,12 +58,21 @@
     try {
       const body = {
         name: form.name,
-        description: form.description || null,
+        description: conComentario ? comentario || null : null,
         price: form.price === '' ? null : Number(form.price),
         category_id: form.category_id || null,
         active: form.active,
       }
       const prod = esNuevo ? await api.crearProducto(body) : await api.actualizarProducto(id, body)
+
+      if (esNuevo && (talla || genero)) {
+        await api.crearVariante({
+          product_id: prod.id,
+          size: talla || null,
+          gender: genero || null,
+          stock_quantity: Number(cantidad) || 0,
+        })
+      }
 
       for (const foto of pendientes) {
         await api.subirImagen(prod.id, foto.file, false)
@@ -81,12 +104,6 @@
         class="mt-1 w-full rounded border border-slate-300 px-3 py-2" />
     </label>
 
-    <label class="block">
-      <span class="text-sm font-medium">Descripción</span>
-      <textarea bind:value={form.description} rows="3"
-        class="mt-1 w-full rounded border border-slate-300 px-3 py-2"></textarea>
-    </label>
-
     <div class="grid grid-cols-2 gap-4">
       <label class="block">
         <span class="text-sm font-medium">Precio (S/)</span>
@@ -105,11 +122,55 @@
       </label>
     </div>
 
+    {#if esNuevo}
+      <div class="grid grid-cols-3 gap-4">
+        <label class="block">
+          <span class="text-sm font-medium">Talla</span>
+          <select bind:value={talla}
+            class="mt-1 w-full rounded border border-slate-300 px-3 py-2">
+            <option value="">Selecciona talla</option>
+            {#each TALLAS as t}
+              <option value={t}>{t}</option>
+            {/each}
+          </select>
+        </label>
+        <label class="block">
+          <span class="text-sm font-medium">Género</span>
+          <select bind:value={genero}
+            class="mt-1 w-full rounded border border-slate-300 px-3 py-2">
+            <option value="">Selecciona género</option>
+            {#each GENEROS as g}
+              <option value={g.valor}>{g.texto}</option>
+            {/each}
+          </select>
+        </label>
+        <label class="block">
+          <span class="text-sm font-medium">Cantidad</span>
+          <input type="number" min="0" bind:value={cantidad}
+            class="mt-1 w-full rounded border border-slate-300 px-3 py-2" />
+        </label>
+      </div>
+    {:else}
+      <p class="text-xs text-slate-500">
+        Las tallas y el stock se muestran en el detalle del producto.
+      </p>
+    {/if}
+
+    <div class="space-y-2">
+      <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" bind:checked={conComentario} />
+        Agregar comentario (opcional)
+      </label>
+      {#if conComentario}
+        <textarea bind:value={comentario} rows="3" placeholder="Escribe un comentario…"
+          class="w-full rounded border border-slate-300 px-3 py-2"></textarea>
+      {/if}
+    </div>
+
     <label class="flex items-center gap-2 text-sm">
       <input type="checkbox" bind:checked={form.active} /> Activo
     </label>
 
-    <!-- Fotos -->
     <div class="border-t border-slate-100 pt-4 space-y-3">
       <div>
         <h2 class="font-medium">Fotos</h2>
