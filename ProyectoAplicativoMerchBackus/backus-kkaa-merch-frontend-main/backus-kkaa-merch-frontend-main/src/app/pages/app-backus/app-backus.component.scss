@@ -1,0 +1,108 @@
+// Contenido principal
+.page-content {
+  // background-color: #292930;
+  padding: 1rem;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  .container-select-sucursal {
+    padding-bottom: 16px;
+    // margin-top: 64px;
+  }
+}
+
+// Tarjeta de sucursales
+.card-header {
+  background-color: #2a2831;
+  box-shadow: 0 3px 8px rgba(172, 170, 170, 0.43);
+  border-top: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: none;
+  color:#fff;
+  padding: 12px 8px 12px 8px;
+  border-radius: 2px;
+
+  nz-typography{
+    color:#fff;
+  }
+  .breadcrumb-text {
+    font-weight: bold;
+    color:#fff;
+  }
+}
+
+.card-content {
+  background-color: #2A2831;
+  box-shadow: 0 3px 8px rgba(172, 170, 170, 0.43);
+  border: 1px solid #ddd;
+  color:#fff;
+  padding: 12px 8px 14px 8px;
+  border-radius: 2px;
+  .content-store {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    align-items: center;
+    .content-name-store {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+    }
+    span {
+      font-style: italic;
+    }
+    button {
+      border-radius: 8px;
+      margin-left: 8px;
+    }
+  }
+  nz-typography{
+    color:#fff;
+  }
+  .custom-nz-select {
+    width: 100%;
+
+    .ant-select-selector {
+      border-radius: 40px;
+    }
+
+  }
+}
+
+.tagSucursal{
+  width: 60%;
+  height: 32px;
+  text-align: center;
+  align-content: center;
+}
+
+::ng-deep .custom-nz-select .ant-select-selector {
+  border-radius: 8px !important;
+}
+
+nz-card{
+  border: transparent;
+}
+
+// spinnner start
+.fullscreen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.spinner-container {
+  text-align: center;
+}
+::ng-deep .ant-spin-nested-loading > div > .ant-spin .ant-spin-text {
+  left: -30px;
+  text-shadow: none;
+  color: white;
+}
+// spinner finish

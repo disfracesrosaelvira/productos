@@ -1,0 +1,60 @@
+<div class="content-option-asignacion">
+  <nz-card [nzBodyStyle]="{'padding': '0'}" *ngIf="!guardadoExitoso">
+    <div class="card-content">
+      <div nz-form-item>
+        <div><nz-typography>Marca: </nz-typography></div>
+        <div>
+          <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione una marca" class="custom-nz-select"
+            [(ngModel)]="selectedMarcaMuebles" (ngModelChange)="selectMarca($event)">
+            <nz-option *ngFor="let option of dataMarcaMuebles" [nzValue]="option.value"
+              [nzLabel]="option.label"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+
+      <div nz-col nzSpan="auto">
+        <div nz-form-item>
+          <div><nz-typography>Tipo Mueble: </nz-typography></div>
+          <div>
+            <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione un tipo de mueble" class="custom-nz-select"
+              [(ngModel)]="selectedTipoMueble" (ngModelChange)="selectTipoMueble($event)">
+              <nz-option *ngFor="let option of dataTipoMueble" [nzValue]="option.value"
+                [nzLabel]="option.label"></nz-option>
+            </nz-select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nz-card>
+  <nz-card [nzBodyStyle]="{'padding': '0'}" *ngIf="guardadoExitoso">
+    <div class="card-header card-header-success-create-competencia">
+      <nz-typography>
+        Incidencia Creada:
+      </nz-typography>
+    </div>
+    <div class="card-content">
+      <div class="card-content-description-success-create-competencia">
+        <nz-typography>
+          Formulario subido correctamente en Mueble - Asignacion
+          Pulse para volver para ir al menu
+        </nz-typography>
+        <div>
+          <ul>
+            <li> Se Agregó el Tipo de Mueble: <strong>{{selectedTipoMueble}}</strong></li>
+            <li> Se Agregó la Marca: <strong>{{selectedMarcaMuebles}}</strong></li>
+          </ul>
+        </div>
+      </div>
+      <div class="button-volver">
+        <button nz-button nzType="primary" (click)="volverMenu()">Volver</button>
+      </div>
+    </div>
+  </nz-card>
+</div>
+
+<div class="container-footer" *ngIf="!guardadoExitoso">
+  <button nz-button nzType="primary" nzDanger (click)="volverMenu()">Cancelar</button>
+  <button nz-button nzType="primary" (click)="saveAsignacion()" [disabled]="!isFormValidFlag">Guardar</button>
+</div>
+
+<app-spinner-loading [loading]="loading"></app-spinner-loading>

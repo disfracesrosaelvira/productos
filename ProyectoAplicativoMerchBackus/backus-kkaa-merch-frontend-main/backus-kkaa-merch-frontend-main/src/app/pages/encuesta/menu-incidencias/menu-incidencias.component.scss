@@ -1,0 +1,46 @@
+// Tarjeta de sucursales
+.card-header {
+  background-color: #2a2831;
+  box-shadow: 0 3px 8px rgba(172, 170, 170, 0.43);
+  border-top: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: none;
+  color:#fff;
+  padding: 12px 8px 12px 8px;
+  border-radius: 2px;
+
+  nz-typography{
+    color:#fff;
+  }
+  .breadcrumb-text {
+    font-weight: bold;
+    color:#fff;
+  }
+}
+
+.card-content {
+  background-color: #2A2831;
+  box-shadow: 0 3px 8px rgba(172, 170, 170, 0.43);
+  border: 1px solid #ddd;
+  color:#fff;
+  padding: 0.5rem;
+  border-radius: 2px;
+  .card-list-item {
+    display: flex;
+    // flex-direction: column;
+    gap: 2px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+}
+
+nz-card{
+  border: transparent;
+}
+
+.custom-button.selected {
+  background-color: #1890ff;
+  color: #fff;
+}
+

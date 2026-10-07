@@ -1,0 +1,53 @@
+<div class="container">
+  <div class="content-login">
+    <h1 class="heading" style="margin-bottom: 10px;">👋 Bienvenido</h1>
+    <p class="para" style="margin-bottom: 10px;">Por favor ingrese su usuario para continuar:</p>
+    <form [formGroup]="validateForm" class="login-form" (ngSubmit)="login()">
+      <div nz-form-item class="ion-item">
+        <div nz-form-control>
+          <nz-input-group nzPrefixIcon="user">
+            <input type="text" nz-input formControlName="userName" placeholder="Ingrese usuario"
+              (blur)="onBlurUserName()" />
+          </nz-input-group>
+          <div *ngIf="validateForm.controls['userName'].dirty && validateForm.controls['userName'].errors" class="error">
+            <ng-container *ngIf="validateForm.controls['userName'].errors?.['required']">
+              Por favor ingrese usuario correcto
+            </ng-container>
+            <!-- <ng-container *ngIf="validateForm.controls['userName'].errors?.['incorrect']">
+              Ingrese nombre de usuario correcto
+            </ng-container> -->
+          </div>
+        </div>
+      </div>
+      <div nz-form-item class="ion-item">
+        <div nz-form-control>
+          <!-- <nz-input-group nzPrefixIcon="lock" [nzSuffix]="passwordVisible ? 'eye-invisible' : 'eye'" (nzSuffixClick)="togglePasswordVisibility()">
+            <input [type]="passwordVisible ? 'text' : 'password'" nz-input formControlName="password" placeholder="Ingrese contraseña" />
+          </nz-input-group> -->
+          <nz-input-group nzPrefixIcon="lock">
+            <input [type]="passwordVisible ? 'text' : 'password'" nz-input formControlName="password" placeholder="Ingrese contraseña" />
+            <i nz-icon [nzType]="passwordVisible ? 'eye-invisible' : 'eye'" nzTheme="outline" class="ant-input-suffix" (click)="togglePasswordVisibility()"></i>
+          </nz-input-group>
+          <div *ngIf="validateForm.controls['password'].dirty && validateForm.controls['password'].errors" class="error">
+            <ng-container *ngIf="validateForm.controls['password'].errors?.['required']">
+              Por favor ingrese su contraseña correcta
+            </ng-container>
+            <!--  <ng-container *ngIf="validateForm.controls['password'].errors?.['incorrect']">
+              Ingrese contraseña correcta
+            </ng-container> -->
+          </div>
+        </div>
+      </div>
+      <div class="content-button">
+        <button nz-button nzType="primary" [nzLoading]="loading" [disabled]="clicked" (click)="login()" nzBlock>Iniciar Sesión
+          <span nz-icon nzType="poweroff"></span> </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="fullscreen-overlay" *ngIf="loading">
+  <div class="spinner-container">
+    <nz-spin nzTip="Cargando..."></nz-spin>
+  </div>
+</div>

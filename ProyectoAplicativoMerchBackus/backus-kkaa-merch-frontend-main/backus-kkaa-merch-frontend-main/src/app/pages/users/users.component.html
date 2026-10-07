@@ -1,0 +1,343 @@
+<nz-content class="page-content">
+  <div class="container-apps">
+    <button nz-button (click)="prepareNewRol()" [ngStyle]="{marginBottom: '4px'}" nzType="primary">Crear</button>
+    <nz-table
+      #nzTable
+      [nzData]="roles"
+      [nzLoading]="loadingRoles"
+      nzShowPagination="false"
+      [ngStyle]="{whiteSpace: 'nowrap',}"
+      nzSize="small"
+      [nzScroll]="{ x: 'auto' }"
+      >
+      <thead>
+        <tr>
+          <th nzWidth="auto">
+            Rol
+            <app-filter-table-commercial-estructure-reports
+              textPlaceholder="Buscar Rol"
+              [filterItems]="columnFiltersRoles.nombre"
+              (changeFilterItems)="handleFilter($event, 'roles', 'nombre')">
+            </app-filter-table-commercial-estructure-reports>
+          </th>
+          <th nzWidth="auto">Descripción</th>
+          <th nzWidth="auto" style="text-align: center;">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let data of nzTable.data">
+          <tr>
+            <td>{{ data.nombre }}</td>
+            <td>{{ data.descripcion }}</td>
+            <td>
+              <a nz-button nzType="link" nzBlock (click)="openEditRol(data)">
+                <span nz-icon nzType="edit" nzTheme="outline"></span>
+              </a>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </nz-table>
+    
+    <div class="container-options-users">
+      <button nz-button (click)="prepareNewUser()" nzType="primary">Crear</button>
+      <div>
+        <div class="button-excel">
+          <span (click)="exportExcel()" nz-icon nzType="file-excel" nzTheme="outline" class="icon-excel"></span>
+        </div>
+      </div>
+    </div>
+    <nz-table
+    #nzTable2
+    [nzData]="users"
+    [nzLoading]="loadingUsers"
+    nzShowPagination="false"
+    [ngStyle]="{whiteSpace: 'nowrap',}"
+    nzSize="small"
+    [nzScroll]="{ x: 'auto' }"
+    >
+    <thead>
+      <tr>
+        <th nzWidth="auto">
+          Usuario
+          <app-filter-table-commercial-estructure-reports
+              textPlaceholder="Buscar Usuario"
+              [filterItems]="columnFiltersUsers.usuario_id"
+              (changeFilterItems)="handleFilter($event, 'users', 'usuario-id')">
+          </app-filter-table-commercial-estructure-reports>
+        </th>
+        <th nzWidth="auto">
+          Nombre
+          <app-filter-table-commercial-estructure-reports
+            textPlaceholder="Buscar Nombre"
+            [filterItems]="columnFiltersUsers.nombre"
+            (changeFilterItems)="handleFilter($event, 'users', 'nombre')">
+          </app-filter-table-commercial-estructure-reports>
+        </th>
+        <th nzWidth="auto">
+          Estado
+          <app-filter-table-commercial-estructure-reports
+            textPlaceholder="Buscar Estado"
+            [filterItems]="columnFiltersUsers.estado"
+            (changeFilterItems)="handleFilter($event, 'users', 'estado')">
+          </app-filter-table-commercial-estructure-reports>
+        </th>
+        <th nzWidth="auto">
+          Rol
+          <app-filter-table-commercial-estructure-reports
+            textPlaceholder="Buscar Rol"
+            [filterItems]="columnFiltersUsers.rol"
+            (changeFilterItems)="handleFilter($event, 'users', 'rol')">
+          </app-filter-table-commercial-estructure-reports>
+        </th>
+        <th nzWidth="auto">Fecha de Creación</th>
+        <th nzWidth="auto">Fecha de Actualización</th>
+        <th nzWidth="auto">Fecha de Eliminacion</th>
+        <th nzWidth="auto" style="text-align: center;" nzRight>-</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let data of nzTable2.data">
+        <tr>
+          <td>{{ data.usuario_id }}</td>
+          <td>{{ data.nombre }}</td>
+          <td>{{ data.estado == true ? 'Activo' : 'Desactivado'}}</td>
+          <td>{{ data.rol }}</td>
+          <td>{{ data.fecha_creacion | date:'yyyy-MM-dd hh:mm:ss a':'UTC' }}</td>
+          <td>{{ data.fecha_actualizacion | date:'yyyy-MM-dd hh:mm:ss a':'UTC' }}</td>
+          <td>{{ data.fecha_eliminacion | date:'yyyy-MM-dd hh:mm:ss a':'UTC' }}</td>
+          <td style="text-align: center;" nzRight>
+            <div *ngIf="!data.fecha_eliminacion">
+              <a
+                nz-button
+                nz-tooltip
+                nzTooltipTitle="Editar Usuario"
+                (click)="prepareEditUser(data)">
+                <span nz-icon nzType="edit" nzTheme="outline"></span>
+              </a>
+              <a
+                nz-button
+                nz-tooltip
+                nzTooltipTitle="Eliminar usuario"
+                nz-popconfirm
+                nzPopconfirmTitle="seguro de eliminar?"
+                nzPopconfirmPlacement="bottom"
+                (nzOnConfirm)="deleteUser(data._id)"
+                (nzOnCancel)="null" nzType="link"
+                nzType="link">
+                <span nz-icon nzType="delete" nzTheme="outline"></span>
+              </a>
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+    </nz-table>
+    <div [ngStyle]="{ marginTop: '15px'}">
+      <nz-pagination
+        [nzPageIndex]="pageIndexUsers"
+        [nzTotal]="pageTotalUsers"
+        [nzPageSize]="pageSizeUsers"
+        (nzPageIndexChange)="handlePaginationUsers($event)"
+      >
+      </nz-pagination>
+    </div>
+  </div>
+</nz-content>
+
+<nz-drawer
+[nzBodyStyle]="{ overflow: 'auto' }"
+[nzMaskClosable]="false"
+[nzWidth]="'88%'"
+[nzVisible]="visibleRol"
+[nzTitle]="rol.value._id ? 'Editar Rol' : 'Nuevo Rol'"
+[nzFooter]="footerDrawRol"
+(nzOnClose)="closeDrawRol()"
+>
+<form nz-form [formGroup]="rol" *nzDrawerContent>
+  <div nz-row [nzGutter]="8">
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <nz-form-label>Nombre:</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="nombre"  placeholder="Ingrese nombre del rol" />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <nz-form-label>Descripción:</nz-form-label>
+        <nz-form-control>
+          <textarea
+          nz-input
+          formControlName="descripcion"
+          placeholder="Ingrese la descripción del rol"
+          [nzAutosize]="{ minRows: 3, maxRows: 3 }"
+        ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <nz-form-label [nzXs]="24" [nzSm]="24"> Menus: </nz-form-label>
+        <div *ngFor="let menu of menus; let i = index">
+          <nz-form-control
+            [nzXs]="24"
+            [nzSm]="24"
+            nzErrorTip="Ingrese el nombre o elimine el campo."
+          >
+            <input
+              class="passenger-input"
+              nz-input
+              [ngStyle]="{width: '200px'}"
+              placeholder="nombre"
+              [(ngModel)]="menu.nombre"
+              [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="updateMenuName($event, i)"
+            />
+            <span
+              nz-icon
+              nzType="minus-circle-o"
+              class="dynamic-delete-button"
+              (click)="removeItemMenu(i, $event)"
+            ></span>
+          </nz-form-control>
+        </div>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control [nzXs]="{ span: 24, offset: 0 }" [nzSm]="{ span: 20, offset: 4 }">
+          <button nz-button nzType="dashed" class="add-button" (click)="addItemMenu($event)">
+            <span nz-icon nzType="plus"></span>
+            Agregar
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div  nz-col nzSpan="24">
+      <span>Permisos:</span>
+      <nz-tabset nzTabPosition="left" [nzTabBarStyle]="{padding: '0'}">
+        <nz-tab [ngStyle]="{color: 'black'}" *ngFor="let tab of menus" [nzTitle]="tab.nombre">
+          <ul nz-list [nzDataSource]="tab.permisos" nzBordered nzSize="large">
+            <nz-list-header>Acción</nz-list-header>
+            @for (item of tab.permisos; track item) {
+              <li nz-list-item nzNoFlex>
+                <ul nz-list-item-actions>
+                  <nz-list-item-action>
+                    <nz-switch [(ngModel)]="item.estado"  [ngModelOptions]="{standalone: true}"  (change)="onSwitchChange($event, item)"></nz-switch>
+                  </nz-list-item-action>
+                </ul>
+                {{ item.nombre }}
+              </li>
+            }
+          </ul>
+        </nz-tab>
+      </nz-tabset>
+    </div>
+  </div>
+</form>
+
+<ng-template #footerDrawRol>
+  <div style="float: right">
+    <button nz-button style="margin-right: 8px;" (click)="closeDrawRol()">Cancelar</button>
+    <button nz-button nzType="primary" (click)="saveRol()">Guardar</button>
+  </div>
+</ng-template>
+</nz-drawer>
+
+<nz-drawer
+[nzBodyStyle]="{ overflow: 'auto' }"
+[nzMaskClosable]="false"
+[nzWidth]="'70%'"
+[nzVisible]="visibleUser"
+[nzTitle]="userForm.value._id ? 'Editar Usuario' : 'Nuevo Usuario'"
+[nzFooter]="footerDrawUser"
+(nzOnClose)="closeDrawUser()"
+>
+<form nz-form *nzDrawerContent [formGroup]="userForm">
+  <div nz-row [nzGutter]="8">
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <nz-form-label nzRequired>Nombre de Usuario</nz-form-label>
+        <nz-form-control [nzErrorTip]="userNameErrorTpl">
+          <input nz-input formControlName="nombre" placeholder="Ejm. Juan Garcia Landa" placeholder="Ingrese nombre de usuario" />
+          <ng-template #userNameErrorTpl let-control>
+            @if (control.errors?.['required']) {
+            El Nombre del Usuario es obiglatorio!
+            }
+        </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <nz-form-label nzRequired>Usuario de Sistema</nz-form-label>
+        <nz-form-control [nzErrorTip]="userIdErrorTpl">
+          <input nz-input formControlName="usuario_id" placeholder="Ejm. dev_ia" />
+          <ng-template #userIdErrorTpl let-control>
+            @if (control.errors?.['required']) {
+            El Usuario ID es obiglatorio!
+            }
+        </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <nz-form-label>Contraseña</nz-form-label>
+        <nz-form-control [nzErrorTip]="userPasswordErrorTpl">
+          <nz-input-group [nzSuffix]="suffixTemplate">
+            <input [type]="passwordVisible ? 'text' : 'password'" nz-input type="password" formControlName="contraseña" placeholder="Ingrese Contraseña" />
+          </nz-input-group>
+          <ng-template #userPasswordErrorTpl let-control>
+            @if (control.errors?.['required']) {
+            La contraseña es obiglatorio!
+            }
+        </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+      <ng-template #suffixTemplate>
+        <span
+          nz-icon
+          [nzType]="passwordVisible ? 'eye-invisible' : 'eye'"
+          (click)="passwordVisible = !passwordVisible"
+        ></span>
+      </ng-template>
+    </div>
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <nz-form-label nzRequired>Rol de usuario</nz-form-label>
+        <nz-form-control [nzErrorTip]="userRolErrorTpl">
+          <nz-select formControlName="rol" nzPlaceHolder="Seleccione rol de usuario">
+            <nz-option nzValue="admin" nzLabel="Administrador"></nz-option>
+            <nz-option nzValue="backoffice" nzLabel="Backoffice"></nz-option>
+            <nz-option nzValue="supervisor" nzLabel="Supervisor"></nz-option>
+            <nz-option nzValue="bdr" nzLabel="BDR"></nz-option>
+          </nz-select>
+          <ng-template #userRolErrorTpl let-control>
+            @if (control.errors?.['required']) {
+            El rol es obiglatorio!
+            }
+        </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <nz-form-label>Activo</nz-form-label>
+        <nz-form-control>
+          <nz-switch formControlName="estado"></nz-switch>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </div>
+</form>
+
+<ng-template #footerDrawUser>
+  <div style="float: right">
+    <button nz-button style="margin-right: 8px;" (click)="closeDrawUser()">Cancelar</button>
+    <button nz-button nzType="primary" (click)="saveUser()" [disabled]="!userForm.valid">Guardar</button>
+  </div>
+</ng-template>
+</nz-drawer>
+
+<app-spinner-loading [loading]="loading"></app-spinner-loading>

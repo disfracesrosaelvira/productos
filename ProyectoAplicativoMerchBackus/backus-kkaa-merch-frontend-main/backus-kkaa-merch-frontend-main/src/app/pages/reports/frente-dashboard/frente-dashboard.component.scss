@@ -1,0 +1,137 @@
+.container-content {
+    background-color: #F4F4F4;
+    padding: 12px;
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: bold;
+        background-color: #F6DB20;
+    }
+}
+
+// stilos grafico
+.chart-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.chart-wrapper {
+    width: 100%;
+    // max-width: 600px;
+    margin-bottom: 20px;
+    height: 800px; /* Default height */
+    min-height: 600px; /* Minimum height */
+    background-color: #fff;
+    h4 {
+        text-align: center;
+        background-color: #F6DB20;
+        font-weight: 700;
+        font-size: 16px;
+    }
+}
+  
+// @media (min-width: 1280px) {
+//     .chart-wrapper {
+//         width: calc(50% - 10px);
+//     }
+// }
+
+.chart {
+    width: 100%;
+    height: 800px;
+}
+
+@media (max-width: 600px) {
+    .chart-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+  
+    .chart {
+      width: 544px;
+      min-width: 544px;
+    }
+}
+
+@media (min-width: 601px) and (max-width: 1279px) {
+    .chart-wrapper {
+        width: 544px;
+    }
+}
+
+// @media (min-width: 1280px) {
+//     .chart-wrapper {
+//         width: calc(50% - 10px);
+//     }
+// }
+
+.chart-wrapper-line-marcas {
+    width: 100%;
+    margin-bottom: 20px;
+    // height: 600px; /* Default height */
+    // min-height: 400px; /* Minimum height */
+    background-color: #fff;
+    h4 {
+        text-align: center;
+        background-color: #F6DB20;
+        font-weight: 700;
+        font-size: 16px;
+    }
+}
+.chart-line-marcas {
+    width: 100%;
+    height: 300px;
+}
+
+.container-filter-type-exhibition, .container-filter-marca-exhibition, .container-filter-marca-descripcion-exhibition {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+    gap: 4px;
+    align-items: flex-end;
+}
+.select-marca-descripcion {
+    width: 160px;
+}
+
+.button-excel {
+    text-align: right;
+    .icon-excel {
+        color: #000;
+        font-size: 30px;
+        margin-right: -4px;
+        cursor: pointer;
+    }
+}
+
+//collapse
+.ant-layout.ant-layout-has-sider > .ant-layout {
+    background-color: #fff;
+}
+  
+::ng-deep .ant-layout-sider-zero-width-trigger {
+    position: absolute;
+    top: 12px;
+    // right: -32px;
+    z-index: 1;
+    width: 36px;
+    height: 30px;
+    color: #ffffff;
+    font-size: 18px;
+    line-height: 30px;
+    text-align: center;
+    background: rgba(0, 21, 41, 0.4);
+    border-radius: 0px 24px 24px 0;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+// .nz-sider-customized {
+//     height: calc(100vh - 63.976px);
+//     position: sticky;
+//     top: 63.976px;
+//     overflow-y: auto;
+// }

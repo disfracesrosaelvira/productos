@@ -1,0 +1,88 @@
+// Tarjeta de sucursales
+.card-header {
+  background-color: #2a2831;
+  box-shadow: 0 3px 8px rgba(172, 170, 170, 0.43);
+  border-top: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: none;
+  color:#fff;
+  padding: 12px 8px 12px 8px;
+  border-radius: 2px;
+
+  nz-typography{
+    color:#fff;
+  }
+  .breadcrumb-text {
+    font-weight: bold;
+    color:#fff;
+  }
+}
+
+.card-content {
+  background-color: #2A2831;
+  box-shadow: 0 3px 8px rgba(172, 170, 170, 0.43);
+  border: 1px solid #ddd;
+  color:#fff;
+  padding: 12px 8px 12px 8px;
+  border-radius: 2px;
+
+  nz-typography{
+    color:#fff;
+  }
+  .ant-tabs-tab-btn {
+    text-wrap: wrap;
+  }
+}
+.content-list-segmented {
+  margin-bottom: 8px;
+}
+
+nz-card {
+  border: transparent;
+}
+::ng-deep .ant-segmented {
+  padding: 0;
+  width: 100%;
+}
+::ng-deep .ant-segmented-item-label {
+  text-wrap: wrap;
+  line-height: 1.3;
+}
+::ng-deep .ant-segmented-item:hover {
+  color: #ddd;
+}
+::ng-deep.ant-segmented-item {
+  color: #1890ff;
+  border: 1px solid #ddd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  // padding: 12px 0px 12px 0px;
+}
+
+::ng-deep .ant-segmented-group {
+  gap: 2px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  // width: calc(100vw - 50px);
+  justify-items: normal;
+}
+::ng-deep .ant-segmented-item-selected {
+  background-color: #1890ff;
+  color: #ddd;
+}
+::ng-deep .ant-tabs-card.ant-tabs-top > .ant-tabs-nav .ant-tabs-tab {
+  display: flex;
+  justify-content: center;
+}
+::ng-deep .ant-segmented-item-label {
+  // padding: 12px 0 12px 0;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  @media (max-width:636px) {
+    // padding: 8px 0px 8px 0px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}

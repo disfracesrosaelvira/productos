@@ -1,0 +1,114 @@
+<div class="container-reports">
+  <div>
+    <div class="container-content">
+      <h4>Precio</h4>
+      <div class="content-header">
+        <app-select-date-picker              
+          (dateChanged)="onChangedDate($event)">
+        </app-select-date-picker>
+        <div class="button-excel">
+          <span (click)="exportExcel()" nz-icon nzType="file-excel" nzTheme="outline" class="icon-excel"></span>
+        </div>
+      </div>
+      <nz-table #basicTable [nzData]="prices" [nzLoading]="isLoading" nzShowPagination="false" [ngStyle]="{whiteSpace: 'nowrap'}"  nzSize="small" [nzScroll]="{ x: 'auto' }">
+          <thead>
+            <tr>
+              <th nzWidth="auto">Precio ID</th>
+              <th nzWidth="auto" style="text-align: center;">SKUS</th>
+              <th nzWidth="auto">Latitud</th>
+              <th nzWidth="auto">Longitud</th>
+              <th nzWidth="auto">Url Google Maps</th>
+              <th nzWidth="auto">POC ID</th>
+              <th nzWidth="auto">POC</th>
+              <th nzWidth="auto">Documento SV</th>
+              <th nzWidth="auto">Nombre SV</th>
+              <th nzWidth="auto">Empresa ID</th>
+              <th nzWidth="auto">Usuario ID</th>
+              <th nzWidth="auto">Nombre Usuario</th>
+              <th nzWidth="auto">Fecha Creación</th>
+              <th nzWidth="auto">Offline</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let data of basicTable.data">
+              <td>{{ data.precio_id }}</td>
+              <td>
+                <!-- <ul>
+                  <li *ngFor="let data of data.skus"> {{ data.marca }} | {{ data.cantidad }}</li>
+                </ul> -->
+                <table class="table-border">
+                    <tr>
+                      <th>Marca</th>
+                      <th>Descripcion</th>
+                      <th style="text-align: center;">Precio Regular</th>
+                      <th style="text-align: center;">Mec. Promocional</th>
+                      <th style="text-align: center;">Precio Promocional</th>
+                      <th style="text-align: center;">Precio Adicional</th>
+                      <th style="text-align: center;">Imagen</th>
+                    </tr>
+                    <tr *ngFor="let item of data.skus">
+                      <td>{{ item.marca }}</td>
+                      <td>{{ item.descripcion }}</td>
+                      <td style="text-align: center;">{{ item.pvp_regular | number:'1.2-2' }}</td>
+                      <td style="text-align: center;">{{ item.selected_mecanica }}</td>
+                      <td style="text-align: center;">{{ item.pvp_promocional | number:'1.2-2'}}</td>
+                      <td style="text-align: center;">{{ item.pvp_adicional | number:'1.2-2'}}</td>
+                      <td style="text-align: center;"><nz-avatar nzIcon="user" (click)="showModalImagen(item.imagen_url)" [nzSrc]="item.imagen_url"></nz-avatar></td>
+                    </tr>
+                </table>
+              </td>
+              <td>{{ data.latitud }}</td>
+              <td>{{ data.longitud }}</td>
+              <td style="text-align: center;">
+                <a [href]="getGoogleMapsLink(data.latitud, data.longitud)" target="_blank" style="font-size: 25px; cursor: pointer;">🏠</a>
+              </td>
+              <td>{{ data.poc.poc }}</td>
+              <td>{{ data.poc.nombre }}</td>
+              <td>{{ data.poc.documento_sv }}</td>
+              <td>{{ data.poc.nombre_sv }}</td>
+              <td>{{ data.empresa_id }}</td>
+              <td>{{ data.usuario.usuario_id }}</td>
+              <td>{{ data.usuario.nombre }}</td>
+              <td>{{ data.fecha_creacion | date:'yyyy-MM-dd hh:mm:ss a':'UTC' }}</td>
+              <td>{{ data?.offline ? data?.offline : 0 }}</td>
+              <!-- <td><nz-avatar nzIcon="user" [nzSrc]="data.imagen_url"></nz-avatar></td> 
+              <td>{{ data.fecha_creacion | date:'yyyy-MM-dd hh:mm a':'UTC' }}</td>-->
+            </tr>
+          </tbody>
+      </nz-table>
+      <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+        <nz-pagination
+          [nzPageIndex]="pageIndex"
+          [nzTotal]="totalDocs"
+          [nzPageSize]="pageSize"
+          (nzPageIndexChange)="handlePageEvent($event)"
+        >
+        </nz-pagination>
+        <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(totalDocs) }} registros</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nz-modal [(nzVisible)]="isVisibleModalImagen" nzTitle="Imagen Seleccionado" (nzOnCancel)="handleCancelModalImagen()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <div>
+      <div class="modal-buttons">
+        <button (click)="rotateLeft()" nz-button nzType="default" nzShape="circle"><span nz-icon nzType="left" nzTheme="outline"></span></button>
+        <button (click)="resetImage()" nz-button nzType="default" nzShape="circle"><span nz-icon nzType="undo" nzTheme="outline" style="margin: 0 2px;"></span></button>
+        <button (click)="rotateRight()" nz-button nzType="default" nzShape="circle"><span nz-icon nzType="right" nzTheme="outline"></span></button>
+        <button nz-button nzType="default" (click)="showFullImage()" nzShape="circle"><span nz-icon nzType="eye" nzTheme="outline"></span></button>
+      </div>
+      <div class="image-container">
+        <img [ngStyle]="{'transform': 'rotate(' + angle + 'deg)'}" width="100%" [src]="imagenSeleccionado" alt="Imagen">
+      </div>
+      <div style="text-align: center; margin-bottom: 4px; margin-top: 4px;">
+        <button nz-button [nzSize]="'default'" nzShape="round" (click)="handleCancelModalImagen()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<app-spinner-loading [loading]="isLoadingExportExcel"></app-spinner-loading>

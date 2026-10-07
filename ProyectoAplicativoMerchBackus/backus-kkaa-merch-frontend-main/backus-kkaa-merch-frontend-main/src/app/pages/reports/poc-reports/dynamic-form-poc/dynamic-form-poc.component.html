@@ -1,0 +1,93 @@
+<nz-modal
+  [(nzVisible)]="isVisible"
+  [nzTitle]="isEditMode ? 'Editar POC' : 'Nuevo POC'"
+  (nzOnCancel)="handleCancel()"
+  (nzOnOk)="handleOk()"
+  [nzOkText]="'Guardar'"
+  [nzOkDisabled]="!pocForm.valid || isDuplicateName || isDuplicatePocCadena || isDuplicatePocBackus || isDuplicateNamePlanning">
+    <ng-container *nzModalContent>
+      <form [formGroup]="pocForm" class="container-form">
+        <div *ngIf="isEditMode" class="form-group">
+          <label>POC</label>
+          <input 
+            formControlName="poc" 
+            nz-input
+            type="number"
+            [ngClass]="{'invalid-input': pocForm.get('poc')?.invalid && pocForm.get('poc')?.touched, 'disabled-input': isEditMode}"
+          />
+          <!-- <div *ngIf="pocForm.get('poc')?.invalid && pocForm.get('poc')?.touched" class="error-message">
+            <div *ngIf="pocForm.get('poc')?.errors?.['required']">POC es requerido</div>
+            <div *ngIf="pocForm.get('poc')?.errors?.['pattern']">POC debe ser numérico</div>
+          </div> -->
+        </div>
+        <div class="form-group">
+          <label>Livetrade</label>
+          <input formControlName="poc_livetrade" nz-input [ngClass]="{'invalid-input': pocForm.get('poc_livetrade')?.invalid && pocForm.get('poc_livetrade')?.touched}" />
+          <div *ngIf="pocForm.get('poc_livetrade')?.invalid && pocForm.get('poc_livetrade')?.touched" class="error-message">Livetrade es requerido</div>
+        </div>
+        <div class="form-group">
+          <label><span>* </span>Nombre</label>
+          <input formControlName="nombre" nz-input [ngClass]="{'invalid-input': pocForm.get('nombre')?.invalid && pocForm.get('nombre')?.touched}" />
+          <div *ngIf="pocForm.get('nombre')?.invalid && pocForm.get('nombre')?.touched" class="error-message">Nombre es requerido</div>
+          <div *ngIf="isDuplicateName" class="error-message">Nombre ya existe</div>
+        </div>
+        <div class="form-group">
+          <label>POC Cadena</label>
+          <input formControlName="poc_cadena" nz-input />
+          <div *ngIf="isDuplicatePocCadena" class="error-message">POC Cadena ya existe</div>
+        </div>
+        <div class="form-group">
+          <label>Backus</label>
+          <input formControlName="poc_backus" nz-input />
+          <div *ngIf="isDuplicatePocBackus" class="error-message">Backus ya existe</div>
+        </div>
+        <div class="form-group">
+          <label>Nombre Planning </label>
+          <input formControlName="nombre_planning" nz-input />
+          <div *ngIf="isDuplicateNamePlanning" class="error-message">Nombre Planning ya existe</div>
+        </div>
+        <div class="form-group">
+          <label style="padding-right: 8px;">Tipo</label>
+          <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione Tipo" formControlName="tipo">
+            <nz-option nzLabel="SMK" nzValue="SMK"></nz-option>
+            <nz-option nzLabel="TC" nzValue="TC"></nz-option>
+            <nz-option nzLabel="CADENA LOCAL" nzValue="CADENA LOCAL"></nz-option>
+            <nz-option nzLabel="C&C" nzValue="C&C"></nz-option>
+          </nz-select>
+        </div>
+        <div class="form-group">
+          <label><span>* </span>Documento SV</label>
+          <input formControlName="documento_sv" nz-input />
+          <div *ngIf="pocForm.get('documento_sv')?.invalid && pocForm.get('documento_sv')?.touched" class="error-message">Documento SV es requerido</div>
+        </div>
+        <div class="form-group">
+          <label><span>* </span>Nombre SV</label>
+          <input formControlName="nombre_sv" nz-input />
+          <div *ngIf="pocForm.get('nombre_sv')?.invalid && pocForm.get('nombre_sv')?.touched" class="error-message">Nombre SV es requerido</div>
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <nz-switch 
+            formControlName="estado"
+            (change)="onEstadoChange($event)">
+          </nz-switch>
+        </div>
+        <div *ngIf="isEditMode" class="form-group">
+          <label>Usuario ID Creación</label>
+          <input formControlName="usuario_id_creacion" nz-input [disabled]="true"/>
+        </div>
+        <div class="form-group">
+          <label>Cadena</label>
+          <input formControlName="cadena" nz-input />
+        </div>
+        <div class="form-group">
+          <label>Gerencia</label>
+          <input formControlName="gerencia" nz-input />
+        </div>
+        <div class="form-group">
+          <label>Region</label>
+          <input formControlName="region" nz-input />
+        </div>
+      </form>
+    </ng-container>
+  </nz-modal>

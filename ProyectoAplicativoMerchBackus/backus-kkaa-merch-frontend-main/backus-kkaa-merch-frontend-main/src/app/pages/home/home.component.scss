@@ -1,0 +1,41 @@
+// Contenido principal
+.page-content {
+  padding: 1rem;
+}
+
+::ng-deep .ant-tabs-tab {
+    color:#ffffff !important;
+}
+
+.description {
+  color: #ddd;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.container-apps {
+  // margin-top: 64px;
+  .content-app-backus {
+    border: 1px solid darkgrey;
+    margin-bottom: 8px;
+    cursor: pointer;
+    img {
+      background-color: #FFFFFF;
+      padding: 0px;
+      object-fit: contain;
+      height: 45px;
+      width: 90px;
+    }
+  }
+  .content-app-pernod {
+    border: 1px solid darkgrey;
+    cursor: pointer;
+    img {
+      background-color: #FFFFFF;
+      padding: 2px;
+      object-fit: contain;
+      height: 45px;
+      width: 90px;
+    }
+  }
+}

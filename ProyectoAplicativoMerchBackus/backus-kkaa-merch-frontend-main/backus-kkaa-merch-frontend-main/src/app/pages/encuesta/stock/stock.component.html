@@ -1,0 +1,71 @@
+<div>
+  <nz-card [nzBodyStyle]="{'padding': '0'}" *ngIf="!isSaveOK">
+    <div class="card-header">
+      <nz-typography> Encuesta -
+        <strong nzType="secondary" class="breadcrumb-text">STOCK</strong>
+      </nz-typography>
+    </div>
+    <div class="card-content" >
+        <div nz-col nzSpan="auto" class="container-collapse">
+          <div *ngFor="let stock of listStock" style="max-height: 500px !important; overflow-y: auto !important;">
+            <nz-collapse>
+              <nz-collapse-panel [nzHeader]="headerTemplate" [nzActive]="stock.active" [nzDisabled]="stock.disabled"  nzExpandedIcon="double-right">
+                <div nz-form-item class="rounded-box black-background">
+                  <nz-list>
+                    <nz-list-item *ngFor="let item of stock.listadoOptions">
+                      {{ item.typeOption }}
+                      <!-- <nz-input-number [(ngModel)]="item.value" [nzSize]="'large'" [nzMin]="1" [nzStep]="1" (input)="validateInput($event)"></nz-input-number> -->
+                      <input nz-input [(ngModel)]="item.value" placeholder="" type="number" (keypress)="validateNumberInput($event)" style="width: 110px; border: 1px solid #000;" (input)="validateRecord()"/>
+                    </nz-list-item>
+                  </nz-list>
+                </div>
+              </nz-collapse-panel>
+              <ng-template #headerTemplate>
+                <div class="collapse-custom-header" (click)="validateRecord()">
+                  <div class="collapse-header-content">
+                    <img [src]="stock.imagen ? stock.imagen : 'assets/img/picture.png'" class="header-icon" width="60px" height="40px"/>
+                    <span class="header-text">{{ stock.descripcion }}</span>                                        
+                  </div>
+                  @if(stock.recordExists) {
+                    <span >✅</span>
+                  }
+                </div>
+              </ng-template>
+            </nz-collapse>
+          </div>
+        </div>
+    </div>
+  </nz-card>
+  <nz-card [nzBodyStyle]="{'padding': '0'}" *ngIf="isSaveOK">
+    <div class="card-header">
+      <nz-typography>
+        Se actualizaron los productos:
+      </nz-typography>
+      <div >
+        <ul>
+          <li *ngFor="let item of listProductoOk">{{item.descripcion}}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card-content" >
+        <div nz-col nzSpan="auto">
+          <nz-typography>
+            Formulario subido correctamente En Stock.
+            Pulse para volver para ir al menu
+          </nz-typography>
+        </div>
+        <div class="button-volver">
+          <button nz-button nzType="primary" (click)="volerMenu()">Volver</button>
+        </div>
+    </div>
+  </nz-card>
+</div>
+<div class="container-footer" *ngIf="isShowButton">
+  <button nz-button nzType="primary" (click)="saveStock()" [disabled]="guardarDesabilitado">Guardar</button>
+</div>
+
+<div class="fullscreen-overlay" *ngIf="loading">
+  <div class="spinner-container">
+    <nz-spin nzTip="Cargando..."></nz-spin>
+  </div>
+</div>

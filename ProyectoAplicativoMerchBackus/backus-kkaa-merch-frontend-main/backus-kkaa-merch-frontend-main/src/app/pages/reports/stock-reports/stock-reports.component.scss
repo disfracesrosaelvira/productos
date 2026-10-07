@@ -1,0 +1,27 @@
+.container-reports {
+    padding: 16px;
+    background-color: #29292F;
+}
+.container-content {
+    background-color: #FFFFFF;
+    padding: 12px;
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        .button-excel {
+            text-align: right;
+            .icon-excel {
+                color: green;
+                font-size: 32px;
+                margin-right: -4px;
+                cursor: pointer;
+            }
+        }
+    }
+}
+
+.table-border, .table-border th, .table-border td {
+    border: 1px solid #ebebeb; /* Define el grosor y color del borde */
+    border-collapse: collapse; /* Asegura que los bordes se colapsen en uno solo */
+}

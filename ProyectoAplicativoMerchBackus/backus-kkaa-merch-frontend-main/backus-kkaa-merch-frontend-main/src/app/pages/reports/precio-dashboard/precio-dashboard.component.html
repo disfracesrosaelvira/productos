@@ -1,0 +1,242 @@
+<nz-layout class="layout">
+  <nz-sider
+    nzCollapsible
+    [nzCollapsedWidth]="0"
+    *ngIf="shouldAddBreakpoint(); else siderWithoutBreakpoint"
+    nzBreakpoint="lg"
+  >
+    <app-filter-dashboard
+      [filters]="filters"
+      [tempFilters]="tempFilters"
+      (filtersChanged)="handleFilterChange($event)"
+    />
+  </nz-sider>
+  <ng-template #siderWithoutBreakpoint>
+    <nz-sider nzCollapsible [nzCollapsedWidth]="0">
+        <app-filter-dashboard
+          [filters]="filters"
+          [tempFilters]="tempFilters"
+          (filtersChanged)="handleFilterChange($event)"
+        />
+    </nz-sider>
+  </ng-template>
+  <nz-layout>
+    <nz-content>
+      <div class="inner-content">
+        <div class="container-content">
+          <h2>Dashboard de Precio</h2>
+          <div>
+            <div class="container-filter-marca-exhibition">
+              <div class="item">
+                <label>Marcas</label>
+                <button nz-button nz-dropdown [nzDropdownMenu]="menuExhibitionMarca" [nzPlacement]="'bottomLeft'" style="width: 190px;">
+                  {{ selectComboBox.marca.titleSelect }}
+                  <span nz-icon nzType="down"></span>
+                </button>
+                <nz-dropdown-menu #menuExhibitionMarca="nzDropdownMenu">
+                  <ul nz-menu nzSelectable>
+                    <li nz-menu-item class="button-clear-filter">
+                      <button nz-button nzType="text" nzBlock (click)="removeFilterSelectedGraphic('marca')">
+                        <span nz-icon nzType="filter" nzTheme="fill"></span>
+                        Borrar Filtro
+                      </button>
+                    </li>
+                    <li nz-menu-item>
+                      <label nz-checkbox [(ngModel)]="selectComboBox.marca.selectAllChecked" (ngModelChange)="onSelectAllChangeGraphic($event, 'marca')">
+                        Seleccionar todos
+                      </label>
+                    </li>
+                    <li nz-menu-item *ngFor="let item of selectComboBox.marca.list">
+                      <label nz-checkbox [(ngModel)]="item.checked" (ngModelChange)="onItemChangeGraphic('marca')">
+                        {{ item.label }}
+                      </label>
+                    </li>
+                  </ul>
+                </nz-dropdown-menu>
+              </div>
+              <div class="button-excel">
+                <span (click)="exportExcelPrecioCountsByBrandAndDescriptionByMonthAndWeek()" nz-icon nzType="file-excel" nzTheme="outline" class="icon-excel"></span>
+              </div>
+            </div>
+            <div class="chart-container">
+              <div class="chart-wrapper">
+                <h4>Evolutivo por Marcas</h4>
+                <div #precioBrandDescriptionStackedLine class="chart"></div>
+              </div>
+            </div>
+      
+          </div>
+          <div class="title-marca-description">
+            <h4>Marca/Productos</h4>
+            <div>
+              <button
+                nz-button
+                nz-popover
+                [nzPopoverTitle]="titleTemplatePopover"
+                [nzPopoverVisible]="isPopoverVisibleExportFileAveragesMarcaDescripcion"
+                (nzPopoverVisibleChange)="handlePopoverVisibleChangeAveragesMarcaDescription($event)"
+                [nzPopoverContent]="contentTemplatePopover"
+                nzPopoverPlacement="bottomRight"
+                (click)="togglePopoverAveragesMarcaDescription($event)"
+                nzType="text"
+                nzPopoverTrigger="click"
+                style="color: #fff;"
+              >
+                <span nz-icon nzType="more" nzTheme="outline"></span>
+              </button>
+              <ng-template #titleTemplatePopover>
+                <a (click)="clickMePopoverAveragesMarcaDescription()"><span nz-icon nzType="close" nzTheme="outline" style="color: #000;"></span></a>
+              </ng-template>
+              <ng-template #contentTemplatePopover>
+                <div style="display: flex; gap: 2px;">
+                  <!-- <button nz-button nzType="dashed" (click)="exportExcelAdicionales()"><span nz-icon nzType="file-excel" nzTheme="outline"></span></button> -->
+                  <div class="button-excel">
+                    <span (click)="exportExcelPrecioAveragesByBrandAndDescriptionByMonthAndWeek()" nz-icon nzType="file-excel" nzTheme="outline" class="icon-excel"></span>
+                  </div>
+                  </div>
+              </ng-template>
+            </div>
+          </div>
+          <nz-table #expandTable [nzData]="listOfMapData" nzTableLayout="fixed" [nzFrontPagination]="false" [ngStyle]="{whiteSpace: 'nowrap'}"  nzSize="small" [nzScroll]="{ x: 'auto' }">
+            <thead>
+              <tr>
+                <th rowspan="2">MARCA/PRODUCTO</th>
+                <ng-container *ngFor="let week of weekNumbers">
+                  <th colspan="3">{{filters.meses.titleSelect === 'Seleccione' ? 'Mes ' + week : 'Semana ' + week}}</th>
+                </ng-container>
+              </tr>
+              <!-- Segunda fila con CANT y MIX -->
+              <tr>
+                <ng-container *ngFor="let week of weekNumbers">
+                  <th>ADICIONAL</th>
+                  <th>PROMOCIONAL</th>
+                  <th>REGULAR</th>
+                </ng-container>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Filas de Marca -->
+              <ng-container *ngFor="let brand of listOfMapData">
+                <tr class="brand-row">
+                  <!-- Nombre de la Marca -->
+                  <td [nzIndentSize]="0" [nzShowExpand]="!!brand.children" [(nzExpand)]="brand.expand">
+                    {{ brand.name }}
+                  </td>
+                  <ng-container *ngFor="let week of weekNumbers">
+                    <td>{{ getBrandTotalQtyForWeek(brand, week, 'avg_pvp_adicional') | number:'1.2-2' || '-' }}</td>
+                    <td>{{ getBrandTotalQtyForWeek(brand, week, 'avg_pvp_promocional') | number:'1.2-2' || '-' }}</td>
+                    <td>{{ getBrandTotalQtyForWeek(brand, week, 'avg_pvp_regular') | number:'1.2-2' || '-' }}</td>
+                  </ng-container>
+                </tr>
+          
+                <!-- Filas de Producto (Expandibles) -->
+                <ng-container *ngIf="brand.expand">
+                  <tr *ngFor="let product of brand.children">
+                    <td style="padding-left: 20px;">{{ product.name }}</td>
+                    <ng-container *ngFor="let week of weekNumbers">
+                      <!-- <td>{{ product.weeksData?.[week]?.avg_pvp_adicional | number:'1.2-2' ?? '-' }}</td>
+                      <td>{{ product.weeksData?.[week]?.avg_pvp_promocional | number:'1.2-2' ?? '-' }}</td>
+                      <td>{{ product.weeksData?.[week]?.avg_pvp_regular | number:'1.2-2' ?? '-' }}</td> -->
+                      <td>{{ product.weeksData?.[week]?.avg_pvp_adicional != null ? (product.weeksData?.[week]?.avg_pvp_adicional | number:'1.2-2') : '-' }}</td>
+                      <td>{{ product.weeksData?.[week]?.avg_pvp_promocional != null ? (product.weeksData?.[week]?.avg_pvp_promocional | number:'1.2-2') : '-' }}</td>
+                      <td>{{ product.weeksData?.[week]?.avg_pvp_regular != null ? (product.weeksData?.[week]?.avg_pvp_regular | number:'1.2-2') : '-' }}</td>
+                    </ng-container>
+                  </tr>
+                </ng-container>
+              </ng-container>
+        
+              <!-- Fila de Totales -->
+              <tr class="total-row">
+                <td><strong>TOTAL</strong></td>
+                <ng-container *ngFor="let week of weekNumbers">
+                  <td>{{ totalPerWeek[week].avg_pvp_adicional | number:'1.2-2' || '-' }}</td>
+                  <td>{{ totalPerWeek[week].avg_pvp_promocional | number:'1.2-2' || '-' }}</td>
+                  <td>{{ totalPerWeek[week].avg_pvp_regular | number:'1.2-2' || '-' }}</td>
+                </ng-container>
+              </tr>
+            </tbody>
+          </nz-table>
+          <div class="title-marca-description">
+            <h4>Tiendas</h4>
+            <div>
+              <button
+                nz-button
+                nz-popover
+                [nzPopoverTitle]="titleTemplatePopoverStoreProductPromocional"
+                [nzPopoverVisible]="isPopoverVisibleExportFileStoresProductPromotional"
+                (nzPopoverVisibleChange)="handlePopoverVisibleChangeStoreProductPromocional($event)"
+                [nzPopoverContent]="contentTemplatePopoverStoreProductPromocional"
+                nzPopoverPlacement="bottomRight"
+                (click)="togglePopoverStoreProductPromocional($event)"
+                nzType="text"
+                nzPopoverTrigger="click"
+                style="color: #fff;"
+              >
+                <span nz-icon nzType="more" nzTheme="outline"></span>
+              </button>
+              <ng-template #titleTemplatePopoverStoreProductPromocional>
+                <a (click)="clickMePopoverStoreProductPromocional()"><span nz-icon nzType="close" nzTheme="outline" style="color: #000;"></span></a>
+              </ng-template>
+              <ng-template #contentTemplatePopoverStoreProductPromocional>
+                <div style="display: flex; gap: 2px;">
+                  <!-- <button nz-button nzType="dashed" (click)="exportExcelAdicionales()"><span nz-icon nzType="file-excel" nzTheme="outline"></span></button> -->
+                  <div class="button-excel">
+                    <span (click)="exportExcelPrecioStoresWithProductsPromotionalPrice()" nz-icon nzType="file-excel" nzTheme="outline" class="icon-excel"></span>
+                  </div>
+                  </div>
+              </ng-template>
+            </div>
+          </div>
+          <nz-table #expandTableStoreProductPromotional [nzData]="listOfMapDataStoresWithProductsPromotionalPrice" nzTableLayout="fixed" [nzFrontPagination]="false" [ngStyle]="{whiteSpace: 'nowrap'}"  nzSize="small" [nzScroll]="{ x: 'auto' }">
+            <thead>
+              <tr>
+                <th rowspan="1"></th>
+                <ng-container *ngFor="let week of weekNumbersStoreProductPromotional">
+                  <th colspan="1">{{filters.meses.titleSelect === 'Seleccione' ? 'Mes ' + week : 'Semana ' + week}}</th>
+                </ng-container>
+              </tr>
+              <!-- Segunda fila con CANT y MIX -->
+              <!-- <tr>
+                <ng-container *ngFor="let week of weekNumbersStoreProductPromotional">
+                  <th>ADICIONAL</th>
+                  <th>PROMOCIONAL</th>
+                  <th>REGULAR</th>
+                </ng-container>
+              </tr> -->
+            </thead>
+            <tbody>
+              <!-- Filas de Marca -->
+              <ng-container *ngFor="let brand of listOfMapDataStoresWithProductsPromotionalPrice">
+                <tr class="brand-row">
+                  <!-- Nombre de la Marca -->
+                  <td [nzIndentSize]="0" [nzShowExpand]="!!brand.children" [(nzExpand)]="brand.expand">
+                    {{ brand.name }}
+                  </td>
+                  <ng-container *ngFor="let week of weekNumbersStoreProductPromotional">
+                    <!-- <td>{{ getBrandTotalQtyForWeek(brand, week, 'avg_pvp_adicional') | number:'1.2-2' || '-' }}</td> -->
+                    <!-- <td>{{ getBrandTotalQtyForWeek(brand, week, 'avg_pvp_promocional') | number:'1.2-2' || '-' }}</td> -->
+                    <!-- <td>{{ getBrandTotalQtyForWeek(brand, week, 'avg_pvp_regular') | number:'1.2-2' || '-' }}</td> -->
+                    <td></td>
+                  </ng-container>
+                </tr>
+          
+                <!-- Filas de Producto (Expandibles) -->
+                <ng-container *ngIf="brand.expand">
+                  <tr *ngFor="let product of brand.children">
+                    <td style="padding-left: 20px;">{{ product.name }}</td>
+                    <ng-container *ngFor="let week of weekNumbersStoreProductPromotional">
+                      <!-- <td>{{ product.weeksData?.[week]?.avg_pvp_adicional != null ? (product.weeksData?.[week]?.avg_pvp_adicional | number:'1.2-2') : '-' }}</td> -->
+                      <td>{{ product.weeksData?.[week]?.avg_pvp_promocional != null ? (product.weeksData?.[week]?.avg_pvp_promocional | number:'1.2-2') : '-' }}</td>
+                      <!-- <td>{{ product.weeksData?.[week]?.avg_pvp_regular != null ? (product.weeksData?.[week]?.avg_pvp_regular | number:'1.2-2') : '-' }}</td> -->
+                    </ng-container>
+                  </tr>
+                </ng-container>
+              </ng-container>
+            </tbody>
+          </nz-table>
+        </div>
+      </div>
+    </nz-content>
+  </nz-layout>
+</nz-layout>
+<app-spinner-loading [loading]="isLoadingGeneric"></app-spinner-loading>

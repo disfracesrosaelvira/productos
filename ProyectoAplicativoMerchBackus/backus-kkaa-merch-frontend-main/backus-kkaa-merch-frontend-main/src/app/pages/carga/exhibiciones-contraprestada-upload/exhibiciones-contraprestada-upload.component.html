@@ -1,0 +1,750 @@
+<div class="container">
+    <div class="content-uploading">
+      <div class="">
+        <nz-card [nzTitle]="'Carga de Archivos'">
+          <div class="card-content">
+            <p><button nz-button nzType="primary" (click)="adicionalInput.click()">Cargar archivo</button></p>             
+          </div>            
+          <div *ngIf="selectedFileName && selectedFileSize" class="file-info">
+            <div>
+              <i nz-icon nzType="file-excel" nzTheme="outline" style="font-size: 16px; color: green; margin-right: 4px;"></i>
+              <span>{{ selectedFileName }} ({{ selectedFileSize }})</span>
+            </div>
+            <button nz-button (click)="deleteFile()" nzType="default" nzShape="circle" style="width: 26px; height: 26px; min-width: 26px;">
+              <span nz-icon nzType="delete" nzTheme="outline" style="color: red;"></span>
+            </button>
+          </div>
+
+          <div style="margin-bottom: 8px;">
+            <button nz-button nzType="primary" [disabled]="isUploadButtonDisabled" (click)="onUploadFile()">Enviar</button>
+          </div>
+          <!-- <div *ngIf="!isValidSheetCount"> -->
+            <nz-alert *ngIf="showAlert" [nzType]="alertType" [nzMessage]="alertMessage" nzShowIcon style="padding-bottom: 4px;"></nz-alert>
+          <!-- </div> -->
+          <!-- <div *ngIf="isValidSheetCount">
+            <nz-alert *ngIf="showAlert" [nzType]="alertType" [nzMessage]="alertMessage" nzShowIcon style="padding-bottom: 4px;"></nz-alert>
+          </div> -->
+          
+          <div *ngIf="isSelectExcel" class="container-validations">
+            <div class="item">
+              <nz-alert [nzType]="validationsExcel.duplicates.status ? 'error' : 'success'" [nzMessage]="validationsExcel.duplicates.message" nzShowIcon></nz-alert>
+            </div>
+
+            <div *ngIf="existsColumnVigenciaFechaInicioAndVigenciaFechaFin" class="item">
+              <div *ngIf="!validationsExcel.vigenciaFechaInicio.status">
+                <nz-alert [nzType]="validationsExcel.vigenciaFechaInicio.status ? 'error' : 'success'" [nzMessage]="validationsExcel.vigenciaFechaInicio.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.vigenciaFechaInicio.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.vigenciaFechaInicio.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.vigenciaFechaInicio.data.dataArray | slice: (validationsExcel.vigenciaFechaInicio.data.currentPage - 1) * validationsExcel.vigenciaFechaInicio.data.pageSize : validationsExcel.vigenciaFechaInicio.data.currentPage * validationsExcel.vigenciaFechaInicio.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.vigenciaFechaInicio.data.totalItems"
+                      [nzPageSize]="validationsExcel.vigenciaFechaInicio.data.pageSize"
+                      [nzPageIndex]="validationsExcel.vigenciaFechaInicio.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.vigenciaFechaInicio.data.currentPage"
+                        [nzTotal]="validationsExcel.vigenciaFechaInicio.data.totalItems"
+                        [nzPageSize]="validationsExcel.vigenciaFechaInicio.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'vigenciaFechaInicio')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'vigenciaFechaInicio')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.vigenciaFechaInicio.data.totalItems) }} registros</span>
+                    </div>             
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>
+            </div>
+
+            <div *ngIf="existsColumnVigenciaFechaInicioAndVigenciaFechaFin" class="item">
+              <div *ngIf="!validationsExcel.vigenciaFechaFin.status">
+                <nz-alert [nzType]="validationsExcel.vigenciaFechaFin.status ? 'error' : 'success'" [nzMessage]="validationsExcel.vigenciaFechaFin.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.vigenciaFechaFin.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.vigenciaFechaFin.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.vigenciaFechaFin.data.dataArray | slice: (validationsExcel.vigenciaFechaFin.data.currentPage - 1) * validationsExcel.vigenciaFechaFin.data.pageSize : validationsExcel.vigenciaFechaFin.data.currentPage * validationsExcel.vigenciaFechaFin.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.vigenciaFechaFin.data.totalItems"
+                      [nzPageSize]="validationsExcel.vigenciaFechaFin.data.pageSize"
+                      [nzPageIndex]="validationsExcel.vigenciaFechaFin.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.vigenciaFechaFin.data.currentPage"
+                        [nzTotal]="validationsExcel.vigenciaFechaFin.data.totalItems"
+                        [nzPageSize]="validationsExcel.vigenciaFechaFin.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'vigenciaFechaFin')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'vigenciaFechaFin')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.vigenciaFechaFin.data.totalItems) }} registros</span>
+                    </div>             
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>
+            </div>
+
+            <div *ngIf="existsColumnVigenciaFechaInicioAndVigenciaFechaFin" class="item">
+              <div *ngIf="!validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.status">
+                <nz-alert [nzType]="validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.status ? 'error' : 'success'" [nzMessage]="validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.dataArray | slice: (validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.currentPage - 1) * validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.pageSize : validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.currentPage * validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.totalItems"
+                      [nzPageSize]="validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.pageSize"
+                      [nzPageIndex]="validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.currentPage"
+                        [nzTotal]="validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.totalItems"
+                        [nzPageSize]="validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'vigenciaFechaFinMayorOrEqualVigenciaFechaInicio')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'vigenciaFechaFinMayorOrEqualVigenciaFechaInicio')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.vigenciaFechaFinMayorOrEqualVigenciaFechaInicio.data.totalItems) }} registros</span>
+                    </div>             
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>
+            </div>
+
+            <div class="item">
+              <div *ngIf="!validationsExcel.empresaID.status">
+                <nz-alert [nzType]="validationsExcel.empresaID.status ? 'error' : 'success'" [nzMessage]="validationsExcel.empresaID.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.empresaID.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.empresaID.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.empresaID.data.dataArray | slice: (validationsExcel.empresaID.data.currentPage - 1) * validationsExcel.empresaID.data.pageSize : validationsExcel.empresaID.data.currentPage * validationsExcel.empresaID.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.empresaID.data.totalItems"
+                      [nzPageSize]="validationsExcel.empresaID.data.pageSize"
+                      [nzPageIndex]="validationsExcel.empresaID.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.empresaID.data.currentPage"
+                        [nzTotal]="validationsExcel.empresaID.data.totalItems"
+                        [nzPageSize]="validationsExcel.empresaID.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'empresaID')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'empresaID')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.empresaID.data.totalItems) }} registros</span>
+                    </div>             
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.fechaDeCarga.status">
+                <nz-alert [nzType]="validationsExcel.fechaDeCarga.status ? 'error' : 'success'" [nzMessage]="validationsExcel.fechaDeCarga.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.fechaDeCarga.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.fechaDeCarga.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.fechaDeCarga.data.dataArray | slice: (validationsExcel.fechaDeCarga.data.currentPage - 1) * validationsExcel.fechaDeCarga.data.pageSize : validationsExcel.fechaDeCarga.data.currentPage * validationsExcel.fechaDeCarga.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.fechaDeCarga.data.totalItems"
+                      [nzPageSize]="validationsExcel.fechaDeCarga.data.pageSize"
+                      [nzPageIndex]="validationsExcel.fechaDeCarga.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.fechaDeCarga.data.currentPage"
+                        [nzTotal]="validationsExcel.fechaDeCarga.data.totalItems"
+                        [nzPageSize]="validationsExcel.fechaDeCarga.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'fechaDeCarga')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'fechaDeCarga')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.fechaDeCarga.data.totalItems) }} registros</span>
+                    </div>             
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.tipoExhibicionHomologadoContraprestada.status">
+                <nz-alert [nzType]="validationsExcel.tipoExhibicionHomologadoContraprestada.status ? 'error' : 'success'" [nzMessage]="validationsExcel.tipoExhibicionHomologadoContraprestada.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.tipoExhibicionHomologadoContraprestada.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.tipoExhibicionHomologadoContraprestada.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.tipoExhibicionHomologadoContraprestada.data.dataArray | slice: (validationsExcel.tipoExhibicionHomologadoContraprestada.data.currentPage - 1) * validationsExcel.tipoExhibicionHomologadoContraprestada.data.pageSize : validationsExcel.tipoExhibicionHomologadoContraprestada.data.currentPage * validationsExcel.tipoExhibicionHomologadoContraprestada.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.tipoExhibicionHomologadoContraprestada.data.totalItems"
+                      [nzPageSize]="validationsExcel.tipoExhibicionHomologadoContraprestada.data.pageSize"
+                      [nzPageIndex]="validationsExcel.tipoExhibicionHomologadoContraprestada.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.tipoExhibicionHomologadoContraprestada.data.currentPage"
+                        [nzTotal]="validationsExcel.tipoExhibicionHomologadoContraprestada.data.totalItems"
+                        [nzPageSize]="validationsExcel.tipoExhibicionHomologadoContraprestada.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'tipoExhibicionHomologadoContraprestada')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'tipoExhibicionHomologadoContraprestada')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.tipoExhibicionHomologadoContraprestada.data.totalItems) }} registros</span>
+                    </div>             
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.emptyRows.status">
+                <nz-alert [nzType]="validationsExcel.emptyRows.status ? 'error' : 'success'" [nzMessage]="validationsExcel.emptyRows.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.emptyRows.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.emptyRows.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.emptyRows.data.dataArray | slice: (validationsExcel.emptyRows.data.currentPage - 1) * validationsExcel.emptyRows.data.pageSize : validationsExcel.emptyRows.data.currentPage * validationsExcel.emptyRows.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.emptyRows.data.totalItems"
+                      [nzPageSize]="validationsExcel.emptyRows.data.pageSize"
+                      [nzPageIndex]="validationsExcel.emptyRows.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.emptyRows.data.currentPage"
+                        [nzTotal]="validationsExcel.emptyRows.data.totalItems"
+                        [nzPageSize]="validationsExcel.emptyRows.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'emptyRows')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'emptyRows')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.emptyRows.data.totalItems) }} registros</span>
+                    </div>             
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.startDate.status">
+                <nz-alert [nzType]="validationsExcel.startDate.status ? 'error' : 'success'" [nzMessage]="validationsExcel.startDate.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.startDate.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.startDate.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.startDate.data.dataArray | slice: (validationsExcel.startDate.data.currentPage - 1) * validationsExcel.startDate.data.pageSize : validationsExcel.startDate.data.currentPage * validationsExcel.startDate.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.startDate.data.totalItems"
+                      [nzPageSize]="validationsExcel.startDate.data.pageSize"
+                      [nzPageIndex]="validationsExcel.startDate.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.startDate.data.currentPage"
+                        [nzTotal]="validationsExcel.startDate.data.totalItems"
+                        [nzPageSize]="validationsExcel.startDate.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'startDate')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'startDate')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.startDate.data.totalItems) }} registros</span>
+                    </div>
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.endDate.status">
+                <nz-alert [nzType]="validationsExcel.endDate.status ? 'error' : 'success'" [nzMessage]="validationsExcel.endDate.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.endDate.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.endDate.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.endDate.data.dataArray | slice: (validationsExcel.endDate.data.currentPage - 1) * validationsExcel.endDate.data.pageSize : validationsExcel.endDate.data.currentPage * validationsExcel.endDate.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.endDate.data.totalItems"
+                      [nzPageSize]="validationsExcel.endDate.data.pageSize"
+                      [nzPageIndex]="validationsExcel.endDate.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.endDate.data.currentPage"
+                        [nzTotal]="validationsExcel.endDate.data.totalItems"
+                        [nzPageSize]="validationsExcel.endDate.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'endDate')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'endDate')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.endDate.data.totalItems) }} registros</span>
+                    </div>
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>        
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.startDateMayorOrEqualTodayDate.status">
+                <nz-alert [nzType]="validationsExcel.startDateMayorOrEqualTodayDate.status ? 'error' : 'success'" [nzMessage]="validationsExcel.startDateMayorOrEqualTodayDate.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.startDateMayorOrEqualTodayDate.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.startDateMayorOrEqualTodayDate.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.startDateMayorOrEqualTodayDate.data.dataArray | slice: (validationsExcel.startDateMayorOrEqualTodayDate.data.currentPage - 1) * validationsExcel.startDateMayorOrEqualTodayDate.data.pageSize : validationsExcel.startDateMayorOrEqualTodayDate.data.currentPage * validationsExcel.startDateMayorOrEqualTodayDate.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.startDateMayorOrEqualTodayDate.data.totalItems"
+                      [nzPageSize]="validationsExcel.startDateMayorOrEqualTodayDate.data.pageSize"
+                      [nzPageIndex]="validationsExcel.startDateMayorOrEqualTodayDate.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.startDateMayorOrEqualTodayDate.data.currentPage"
+                        [nzTotal]="validationsExcel.startDateMayorOrEqualTodayDate.data.totalItems"
+                        [nzPageSize]="validationsExcel.startDateMayorOrEqualTodayDate.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'startDateMayorOrEqualTodayDate')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'startDateMayorOrEqualTodayDate')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.startDateMayorOrEqualTodayDate.data.totalItems) }} registros</span>
+                    </div>
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>  
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.startDateMaxThirtyDaysMayor.status">
+                <nz-alert [nzType]="validationsExcel.startDateMaxThirtyDaysMayor.status ? 'error' : 'success'" [nzMessage]="validationsExcel.startDateMaxThirtyDaysMayor.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.startDateMaxThirtyDaysMayor.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.startDateMaxThirtyDaysMayor.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.startDateMaxThirtyDaysMayor.data.dataArray | slice: (validationsExcel.startDateMaxThirtyDaysMayor.data.currentPage - 1) * validationsExcel.startDateMaxThirtyDaysMayor.data.pageSize : validationsExcel.startDateMaxThirtyDaysMayor.data.currentPage * validationsExcel.startDateMaxThirtyDaysMayor.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.startDateMaxThirtyDaysMayor.data.totalItems"
+                      [nzPageSize]="validationsExcel.startDateMaxThirtyDaysMayor.data.pageSize"
+                      [nzPageIndex]="validationsExcel.startDateMaxThirtyDaysMayor.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.startDateMaxThirtyDaysMayor.data.currentPage"
+                        [nzTotal]="validationsExcel.startDateMaxThirtyDaysMayor.data.totalItems"
+                        [nzPageSize]="validationsExcel.startDateMaxThirtyDaysMayor.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'startDateMaxThirtyDaysMayor')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'startDateMaxThirtyDaysMayor')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.startDateMaxThirtyDaysMayor.data.totalItems) }} registros</span>
+                    </div>
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.endDateMayorOrEqualTodayDate.status">
+                <nz-alert [nzType]="validationsExcel.endDateMayorOrEqualTodayDate.status ? 'error' : 'success'" [nzMessage]="validationsExcel.endDateMayorOrEqualTodayDate.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.endDateMayorOrEqualTodayDate.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.endDateMayorOrEqualTodayDate.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.endDateMayorOrEqualTodayDate.data.dataArray | slice: (validationsExcel.endDateMayorOrEqualTodayDate.data.currentPage - 1) * validationsExcel.endDateMayorOrEqualTodayDate.data.pageSize : validationsExcel.endDateMayorOrEqualTodayDate.data.currentPage * validationsExcel.endDateMayorOrEqualTodayDate.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.endDateMayorOrEqualTodayDate.data.totalItems"
+                      [nzPageSize]="validationsExcel.endDateMayorOrEqualTodayDate.data.pageSize"
+                      [nzPageIndex]="validationsExcel.endDateMayorOrEqualTodayDate.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.endDateMayorOrEqualTodayDate.data.currentPage"
+                        [nzTotal]="validationsExcel.endDateMayorOrEqualTodayDate.data.totalItems"
+                        [nzPageSize]="validationsExcel.endDateMayorOrEqualTodayDate.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'endDateMayorOrEqualTodayDate')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'endDateMayorOrEqualTodayDate')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.endDateMayorOrEqualTodayDate.data.totalItems) }} registros</span>
+                    </div>
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>           
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.endDateMaxSixtyDaysMayor.status">
+                <nz-alert [nzType]="validationsExcel.endDateMaxSixtyDaysMayor.status ? 'error' : 'success'" [nzMessage]="validationsExcel.endDateMaxSixtyDaysMayor.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.endDateMaxSixtyDaysMayor.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.endDateMaxSixtyDaysMayor.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.endDateMaxSixtyDaysMayor.data.dataArray | slice: (validationsExcel.endDateMaxSixtyDaysMayor.data.currentPage - 1) * validationsExcel.endDateMaxSixtyDaysMayor.data.pageSize : validationsExcel.endDateMaxSixtyDaysMayor.data.currentPage * validationsExcel.endDateMaxSixtyDaysMayor.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.endDateMaxSixtyDaysMayor.data.totalItems"
+                      [nzPageSize]="validationsExcel.endDateMaxSixtyDaysMayor.data.pageSize"
+                      [nzPageIndex]="validationsExcel.endDateMaxSixtyDaysMayor.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.endDateMaxSixtyDaysMayor.data.currentPage"
+                        [nzTotal]="validationsExcel.endDateMaxSixtyDaysMayor.data.totalItems"
+                        [nzPageSize]="validationsExcel.endDateMaxSixtyDaysMayor.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'endDateMaxSixtyDaysMayor')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'endDateMaxSixtyDaysMayor')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.endDateMaxSixtyDaysMayor.data.totalItems) }} registros</span>
+                    </div>
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>     
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.endDateMayorOrEqualStartDate.status">
+                <nz-alert [nzType]="validationsExcel.endDateMayorOrEqualStartDate.status ? 'error' : 'success'" [nzMessage]="validationsExcel.endDateMayorOrEqualStartDate.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.endDateMayorOrEqualStartDate.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.endDateMayorOrEqualStartDate.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.endDateMayorOrEqualStartDate.data.dataArray | slice: (validationsExcel.endDateMayorOrEqualStartDate.data.currentPage - 1) * validationsExcel.endDateMayorOrEqualStartDate.data.pageSize : validationsExcel.endDateMayorOrEqualStartDate.data.currentPage * validationsExcel.endDateMayorOrEqualStartDate.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.endDateMayorOrEqualStartDate.data.totalItems"
+                      [nzPageSize]="validationsExcel.endDateMayorOrEqualStartDate.data.pageSize"
+                      [nzPageIndex]="validationsExcel.endDateMayorOrEqualStartDate.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.endDateMayorOrEqualStartDate.data.currentPage"
+                        [nzTotal]="validationsExcel.endDateMayorOrEqualStartDate.data.totalItems"
+                        [nzPageSize]="validationsExcel.endDateMayorOrEqualStartDate.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'endDateMayorOrEqualStartDate')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'endDateMayorOrEqualStartDate')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.endDateMayorOrEqualStartDate.data.totalItems) }} registros</span>
+                    </div>
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div>
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.existsPocNombre.status">
+                <nz-alert [nzType]="validationsExcel.existsPocNombre.status ? 'error' : 'success'" [nzMessage]="validationsExcel.existsPocNombre.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.existsPocNombre.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.existsPocNombre.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.existsPocNombre.data.dataArray | slice: (validationsExcel.existsPocNombre.data.currentPage - 1) * validationsExcel.existsPocNombre.data.pageSize : validationsExcel.existsPocNombre.data.currentPage * validationsExcel.existsPocNombre.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.existsPocNombre.data.totalItems"
+                      [nzPageSize]="validationsExcel.existsPocNombre.data.pageSize"
+                      [nzPageIndex]="validationsExcel.existsPocNombre.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Nombre</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.existsPocNombre.data.currentPage"
+                        [nzTotal]="validationsExcel.existsPocNombre.data.totalItems"
+                        [nzPageSize]="validationsExcel.existsPocNombre.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'existsPocNombre')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'existsPocNombre')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.existsPocNombre.data.totalItems) }} registros</span>
+                    </div>
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div> 
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.existsSupervisors.status">
+                <nz-alert [nzType]="validationsExcel.existsSupervisors.status ? 'error' : 'success'" [nzMessage]="validationsExcel.existsSupervisors.message" nzShowIcon></nz-alert>
+              </div>
+              <div *ngIf="validationsExcel.existsSupervisors.status">
+                <nz-collapse>
+                  <nz-collapse-panel [nzHeader]="validationsExcel.existsSupervisors.message">
+                    <nz-table
+                      #basicTable
+                      [nzData]="validationsExcel.existsSupervisors.data.dataArray | slice: (validationsExcel.existsSupervisors.data.currentPage - 1) * validationsExcel.existsSupervisors.data.pageSize : validationsExcel.existsSupervisors.data.currentPage * validationsExcel.existsSupervisors.data.pageSize"
+                      [nzFrontPagination]="false"
+                      [nzTotal]="validationsExcel.existsSupervisors.data.totalItems"
+                      [nzPageSize]="validationsExcel.existsSupervisors.data.pageSize"
+                      [nzPageIndex]="validationsExcel.existsSupervisors.data.currentPage"
+                      nzSize="small"
+                    >
+                      <thead>
+                        <tr>
+                          <th nzWidth="auto">Nombre</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of basicTable.data">
+                          <td>{{ item }}</td>
+                        </tr>
+                      </tbody>
+                    </nz-table>
+                    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                      <nz-pagination
+                        [nzPageIndex]="validationsExcel.existsSupervisors.data.currentPage"
+                        [nzTotal]="validationsExcel.existsSupervisors.data.totalItems"
+                        [nzPageSize]="validationsExcel.existsSupervisors.data.pageSize"
+                        (nzPageIndexChange)="onPageIndexChange($event, 'existsSupervisors')"
+                        (nzPageSizeChange)="onPageSizeChange($event, 'existsSupervisors')"
+                      ></nz-pagination>
+                      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.existsSupervisors.data.totalItems) }} registros</span>
+                    </div>
+                  </nz-collapse-panel>
+                </nz-collapse>
+              </div> 
+            </div>
+            <div class="item">
+              <div *ngIf="!validationsExcel.validateRecordsDatabase.status">
+                <div *ngIf="validationsExcel.validateRecordsDatabase.validDates">
+                  <nz-alert [nzType]="validationsExcel.validateRecordsDatabase.status ? 'error' : 'success'" [nzMessage]="validationsExcel.validateRecordsDatabase.message" nzShowIcon></nz-alert>
+                </div>
+                <div *ngIf="!validationsExcel.validateRecordsDatabase.validDates">
+                  <nz-alert [nzType]="'error'" [nzMessage]="'Para verificar que no deben existir ningun registro guardado en la base de datos (primero las fechas deben de estar ok)'" nzShowIcon></nz-alert>
+                </div>
+              </div>
+              <div *ngIf="validationsExcel.validateRecordsDatabase.status">
+                <div *ngIf="validationsExcel.validateRecordsDatabase.verifyCorrectlyDatabase">
+                  <nz-collapse>
+                    <nz-collapse-panel [nzHeader]="validationsExcel.validateRecordsDatabase.message">
+                      <nz-table
+                        #basicTable
+                        [nzData]="validationsExcel.validateRecordsDatabase.data.dataArray | slice: (validationsExcel.validateRecordsDatabase.data.currentPage - 1) * validationsExcel.validateRecordsDatabase.data.pageSize : validationsExcel.validateRecordsDatabase.data.currentPage * validationsExcel.validateRecordsDatabase.data.pageSize"
+                        [nzFrontPagination]="false"
+                        [nzTotal]="validationsExcel.validateRecordsDatabase.data.totalItems"
+                        [nzPageSize]="validationsExcel.validateRecordsDatabase.data.pageSize"
+                        [nzPageIndex]="validationsExcel.validateRecordsDatabase.data.currentPage"
+                        nzSize="small"
+                      >
+                        <thead>
+                          <tr>
+                            <th nzWidth="auto">Descripción</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let item of basicTable.data">
+                            <td>{{ item }}</td>
+                          </tr>
+                        </tbody>
+                      </nz-table>
+                      <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+                        <nz-pagination
+                          [nzPageIndex]="validationsExcel.validateRecordsDatabase.data.currentPage"
+                          [nzTotal]="validationsExcel.validateRecordsDatabase.data.totalItems"
+                          [nzPageSize]="validationsExcel.validateRecordsDatabase.data.pageSize"
+                          (nzPageIndexChange)="onPageIndexChange($event, 'validateRecordsDatabase')"
+                          (nzPageSizeChange)="onPageSizeChange($event, 'validateRecordsDatabase')"
+                        ></nz-pagination>
+                        <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(validationsExcel.validateRecordsDatabase.data.totalItems) }} registros</span>
+                      </div>
+                    </nz-collapse-panel>
+                  </nz-collapse>
+                </div>
+                <div *ngIf="!validationsExcel.validateRecordsDatabase.verifyCorrectlyDatabase">
+                  <nz-alert [nzType]="'error'" [nzMessage]="'No se pudo verificar correctamente los registros en labase de datos, por favor elimine el archivo seleccionado y vuelva a seleccionar el excel'" nzShowIcon></nz-alert>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nz-card>
+      </div>
+      <input hidden (change)="onExcelFileSelected()" #adicionalInput type="file" id="select-file-exhibicion-contraprestada" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">       
+    </div>   
+  </div>
+  
+  <app-spinner-loading [loading]="isLoadingGeneric"></app-spinner-loading>

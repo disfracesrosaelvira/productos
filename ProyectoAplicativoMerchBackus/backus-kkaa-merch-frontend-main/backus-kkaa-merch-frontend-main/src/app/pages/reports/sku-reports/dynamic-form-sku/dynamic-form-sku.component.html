@@ -1,0 +1,120 @@
+<nz-modal
+  [(nzVisible)]="isVisible"
+  [nzTitle]="isEditMode ? 'Editar SKU' : 'Nuevo SKU'"
+  (nzOnCancel)="handleCancel()"
+  (nzOnOk)="handleOk()"
+  [nzOkText]="'Guardar'"
+  [nzOkDisabled]="!skuForm.valid">
+    <ng-container *nzModalContent>
+      <form [formGroup]="skuForm" class="container-form">
+        <div *ngIf="isEditMode" class="form-group">
+            <label>SKU</label>        
+            <input
+              formControlName="sku"
+              nz-input
+              type="number"
+              [ngClass]="{'invalid-input': skuForm.get('sku')?.invalid && skuForm.get('sku')?.touched, 'disabled-input': isEditMode }"/>
+            <div *ngIf="skuForm.get('sku')?.invalid && skuForm.get('sku')?.touched" class="error-message">
+              <div *ngIf="skuForm.get('sku')?.errors?.['required']">SKU es requerido</div>
+              <div *ngIf="skuForm.get('sku')?.errors?.['pattern']">SKU debe ser numérico</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Descripción</label>
+            <input formControlName="descripcion" nz-input [ngClass]="{'invalid-input': skuForm.get('descripcion')?.invalid && skuForm.get('descripcion')?.touched}" />
+            <div *ngIf="skuForm.get('descripcion')?.invalid && skuForm.get('descripcion')?.touched" class="error-message">Descripción es requerido</div>
+        </div>
+        <div>
+          <label style="padding-right: 8px;">Empresa ID</label>
+          <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione Empresa" formControlName="empresa_id" style="width: 70px;">
+            <nz-option nzLabel="BK" nzValue="BK"></nz-option>
+            <nz-option nzLabel="PE" nzValue="PE"></nz-option>
+          </nz-select>
+          <div *ngIf="skuForm.get('empresa_id')?.invalid && skuForm.get('empresa_id')?.touched" class="error-message">Empresa ID es requerido</div>
+        </div>
+        <div class="form-group">
+          <label>Competencia</label>
+          <nz-radio-group formControlName="competencia" nzName="radiogroup">
+            <label nz-radio nzValue="1">Si</label>
+            <label nz-radio nzValue="0">No</label>
+          </nz-radio-group>
+        </div>
+        <div *ngIf="filteredLineas.length > 0" class="form-group">
+          <label>Linea</label>
+          <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione Linea" formControlName="linea">
+            <nz-option *ngFor="let linea of filteredLineas" [nzLabel]="linea" [nzValue]="linea"></nz-option>
+          </nz-select>
+          <div *ngIf="skuForm.get('linea')?.invalid && skuForm.get('linea')?.touched" class="error-message">Linea es requerido</div>
+        </div>
+        <div *ngIf="filteredMarcas.length > 0" class="form-group">
+          <label>Marca</label>
+          <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione Marca" formControlName="marca">
+            <nz-option *ngFor="let marca of filteredMarcas" [nzLabel]="marca" [nzValue]="marca"></nz-option>
+          </nz-select>
+          <div *ngIf="skuForm.get('marca')?.invalid && skuForm.get('marca')?.touched" class="error-message">Marca es requerido</div>
+        </div>
+        <div *ngIf="filteredCategorias.length > 0" class="form-group">
+          <label>Categoría</label>
+          <!-- <input formControlName="categoria" nz-input [ngClass]="{'invalid-input': skuForm.get('categoria')?.invalid && skuForm.get('categoria')?.touched}" /> -->
+          <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione Categoría" formControlName="categoria">
+            <nz-option *ngFor="let categoria of filteredCategorias" [nzLabel]="categoria" [nzValue]="categoria"></nz-option>
+          </nz-select>
+          <div *ngIf="skuForm.get('categoria')?.invalid && skuForm.get('categoria')?.touched" class="error-message">Categoría es requerido</div>
+        </div>
+        <div class="form-group">
+          <label>Imagen</label>
+          <div *ngIf="!existsPhoto">
+            <app-photo-upload 
+                [table]="table" 
+                [nameContainer]="nameContainer" 
+                [maxImages]="1"
+                [maxWidth]="'calc(100vw - 310px)'"
+                [useForPhotoCamera] = 'false'
+                (filesChanged)="onFilesChanged($event)">
+            </app-photo-upload>
+          </div>
+          <div *ngIf="existsPhoto" style="margin-top: 4px;">
+            <nz-collapse [nzBordered]="false">
+              <nz-collapse-panel
+                  [nzHeader]="headerTemplateImagen"
+                  nzHeader="This is panel header 1"
+                  nzActive=false
+                  nzExpandedIcon="double-right"
+              >
+                  <div *ngIf="skuForm.get('imagen')?.value" class="content-imagen">
+                    <img [src]="skuForm.get('imagen')?.value" alt="Imagen seleccionada" style="width: 100%; height: 350px;">
+                  </div>
+                  <ng-template #headerTemplateImagen>
+                    <div class="container-header-photo">
+                      <div style="display: flex; align-items: center;">
+                        <span>{{ imagenNombre }}.{{ imagenExtension }}</span>
+                        <!-- <span class="name-photo">{{ imagenNombre }}</span>
+                        <span>.{{ imagenExtension }}</span> -->
+                      </div>
+                      <div>
+                        <button nz-button nzType="text" nzDanger (click) = "deletePhoto(skuForm.get('imagen')?.value)">
+                          <span nz-icon nzType="delete" nzTheme="fill"></span>
+                        </button>
+                      </div>
+                    </div>
+                  </ng-template>
+              </nz-collapse-panel>
+            </nz-collapse>
+          </div>     
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <div>
+            <nz-switch 
+              formControlName="estado"
+              (change)="onEstadoChange($event)">
+            </nz-switch>
+          </div>
+        </div>
+        <div *ngIf="isEditMode" class="form-group">
+          <label>Usuario ID Creación</label>
+          <input formControlName="usuario_id_creacion" nz-input [disabled]="true"/>
+        </div>
+      </form>
+    </ng-container>
+</nz-modal>

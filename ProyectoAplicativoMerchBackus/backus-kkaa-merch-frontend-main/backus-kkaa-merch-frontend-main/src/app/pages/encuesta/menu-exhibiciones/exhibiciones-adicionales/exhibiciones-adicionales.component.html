@@ -1,0 +1,408 @@
+<div class="content-option-adicionales">
+  <nz-tabset nzType="card">
+    <nz-tab nzTitle="Creación">
+      <!-- <section> -->
+      <div class="container-creation">
+        <nz-card [nzBodyStyle]="{'padding': '0'}"  *ngIf="!guardadoExitoso">
+          <div class="card-content">
+            <div>
+              <div nz-form-item>
+                <div><nz-typography>Zona: </nz-typography></div>
+                <div>
+                  <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione Zona" class="custom-nz-select"
+                    [(ngModel)]="objectExhibicions.zona">
+                    <nz-option *ngFor="let option of dataZonas" [nzValue]="option.value" [nzLabel]="option.label"></nz-option>
+                  </nz-select>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div nz-form-item>
+                <div><nz-typography>Tipo Exhibicion: </nz-typography></div>
+                <div>
+                  <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione Tipo Exhibición"
+                    class="custom-nz-select" [(ngModel)]="objectExhibicions.tipo_exhibicion" (ngModelChange)="selectTypeExhibicion($event)">
+                    <nz-option *ngFor="let option of dataTipoExibiciones" [nzValue]="option.value" [nzLabel]="option.label"></nz-option>
+                  </nz-select>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="selectPoc?.tipo === 'SMK'">
+              <label>Tiene Mueble? </label>
+              <label nz-checkbox [(ngModel)]="objectExhibicions.tipo_mueble"></label>
+            </div>
+            <div *ngIf="isCantidad">
+              <label>Cantidad</label>
+              <input nz-input placeholder="Ingrese la cantidad" [(ngModel)]="cantidadExhibicion" type="text" inputmode="numeric" (input)="validateNumberInputInteger($event)"/>
+            </div>
+            <div>
+              <div>
+                <div><nz-typography>Fecha de Vigencia: </nz-typography></div>
+                <div class="custom-nz-select">
+                  <div style="display: flex; gap: 2px;">
+                    <div class="filters-date">
+                      <!-- <nz-date-picker [(ngModel)]="startOfMonth" nzPlacement="bottomLeft" class="custom-nz-select" (ngModelChange)="onStartDateChange($event)" style="width: 100%;"></nz-date-picker> -->
+                      <nz-date-picker  class="mobile-datepicker" nzFormat="yyyy-MM-dd" [nzDisabledDate]="disabledFilterStartDate"
+                      nzAllowClear="false" [(ngModel)]="startOfMonth" nzPlaceHolder="Fecha inicio"
+                      (nzOnOpenChange)="handleFilterStartDateOpenChange($event)"></nz-date-picker>
+                    </div>
+                    <div class="filters-date">
+                      <!-- <nz-date-picker [(ngModel)]="endOfMonth" nzPlacement="bottomLeft" class="custom-nz-select" (ngModelChange)="onEndDateChange($event)" [nzDisabledDate]="disabledStartDate" style="width: 100%;"></nz-date-picker> -->
+                      <nz-date-picker class="mobile-datepicker" #filterEndDatePicker [nzDisabledDate]="disabledStartDate"
+                        nzAllowClear="false" nzFormat="yyyy-MM-dd"[(ngModel)]="endOfMonth" nzPlaceHolder="Fecha fin">
+                      </nz-date-picker>
+                    </div>
+                  </div>
+                  <!-- <div class="filtros"></div>
+                  <div class="filtros"></div> -->
+                </div>
+              </div>
+            </div>
+            <div nz-col nzSpan="auto">
+              <div nz-form-item>
+                <div><nz-typography>Productos: </nz-typography></div>
+                <div nz-tooltip [nzTooltipOrigin]="button"  nzTooltipPlacement="leftTop"
+                [nzTooltipArrowPointAtCenter]="true">
+                  <nz-input-group [nzSuffix]="suffixIconSearch" >
+                    <nz-select nzShowSearch nzAllowClear  nzPlaceHolder="Codigo del Producto" class="custom-nz-select"
+                      (ngModelChange)="onValueChange($event)" [(ngModel)]="selectProduct">
+                        <nz-option
+                          *ngFor="let option of productos"
+                          [nzValue]="option"
+                          [nzLabel]="option.descripcion"
+                          [nzCustomContent]="true"
+                        >
+                          <div class="product-option">
+                            <nz-avatar zText="" [nzSrc]="option.imagen"></nz-avatar>
+                            <span > {{ option.descripcion }} </span>
+                          </div>
+                        </nz-option>
+                    </nz-select>
+                  </nz-input-group>
+                  <ng-template #suffixIconSearch>
+                    <!-- <button nz-button nzType="primary" (click)="onProductSelect()"  nz-element #button="nzElement" [ngClass]="{'blink': isBlink}"                                      -->
+                    <!-- ><span nz-icon nzType="plus" nzTheme="outline"></span></button> -->
+                  </ng-template>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div nz-form-item>
+                <div *ngFor="let product of objectExhibicions.products;  index as i " class="list-products">
+                  <div style="line-height: 1; display: flex; gap:2px; align-items: center;">
+                    <p style="margin: 0;">
+                      <nz-avatar nzText="" [nzSrc]="product.imagen"></nz-avatar>
+                    </p>
+                    <span> {{ product.descripcion }}</span>
+                  </div>
+                  <div>
+                    <button nz-button nzType="text" nzDanger (click)="removeItemProduct(i,product)">
+                      <span nz-icon nzType="delete" nzTheme="fill"></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: -4px;">
+              <label>Comentarios:</label>
+              <textarea rows="2" nz-input  [(ngModel)]="comentarioExhibicion"></textarea>
+            </div>
+            <div>
+              <app-photo-upload 
+                [table]="table" 
+                [nameContainer]="nameContainer" 
+                [maxImages]="5"
+                [maxWidth]="'calc(100vw - 190px)'"
+                [codeParent]="codeParent"
+                (filesChanged)="onFilesChanged($event)">
+              </app-photo-upload>
+            </div>
+            <!-- <div nz-col nzSpan="auto">
+              <div nz-form-item class="black-background">
+                <div><nz-typography><label nz-checkbox
+                      [(ngModel)]="objectExhibicions.contraprestada">Contraprestada</label> </nz-typography></div>
+              </div>
+            </div> -->
+          </div>
+          <!-- <div nz-col nzSpan="auto"> -->
+          <!-- <input type="file" id="environment" accept="image/*" > -->
+          <!-- <input type="file" id="environment" accept="image/*" (change)="onFileChange($event)"> -->
+          <!-- </div> -->
+
+        </nz-card>
+        <nz-card [nzBodyStyle]="{'padding': '0'}" *ngIf="guardadoExitoso">
+          <div class="card-header">
+            <nz-typography>
+              LISTO:
+            </nz-typography>
+          </div>
+          <div class="card-content">
+            <div nz-col nzSpan="auto">
+              <nz-typography>
+                Formulario subido correctamente en Exhibiciones.
+                Pulse para volver para ir al menú
+              </nz-typography>
+              <div >
+                <ul>
+                  <li>Se Agregó la Zona: <strong>{{objectExhibicions.zona}}</strong></li>
+                  <li>Se Agregó el Tipo de Exhibiciones: <strong>{{objectExhibicions.tipo_exhibicion}}</strong></li>
+                  <!-- <li>Se Agregó el Fecha de Vigencia: <strong>{{objectExhibicions.dia_vigencia}}</strong></li> -->
+                  <strong>Se agregaron los siguientes productos:</strong>
+                  <li *ngFor="let producto of objectExhibicions.products">
+                    {{ producto.descripcion }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="button-volver">
+              <button nz-button nzType="primary" (click)="volverMenu()">Volver</button>
+            </div>
+          </div>
+        </nz-card>
+        <div class="container-footer" *ngIf="!guardadoExitoso">
+          <button nz-button nzType="primary" (click)="guardarExhibiciones()" [disabled]="!isFormValid()">Guardar</button>
+        </div>
+      </div>
+
+    </nz-tab>
+    <nz-tab [nzTitle]="titleTemplate">
+      <div nz-col nzSpan="auto" class="container-collapse">
+        <ng-container *ngIf="isOnline">
+          <div *ngFor="let header of listExhibitionsHeader">
+            <nz-collapse>
+              <nz-collapse-panel [nzHeader]="extraTpl" nzExpandedIcon="double-right">
+                <div *ngFor="let item of header.listExhibitionsOptions">
+                  @if(item.code =='validaciones') {
+                    <nz-divider style="border-top: 1px solid rgba(0, 0, 0, 0.09);"></nz-divider>
+                    <p><strong>{{item.typeOption}}:</strong></p>
+                    <div *ngFor="let validacion of item.value">
+                      <div style="display: flex; justify-content: space-between;">
+                        <p><strong>Usuario ID: </strong></p>
+                        <p>{{validacion.usuario?.usuario_id}}</p>
+                      </div> 
+                      <div style="display: flex; justify-content: space-between;">
+                        <p><strong>Usuario Nombre: </strong></p>
+                        <p>{{validacion.usuario?.nombre}}</p>
+                      </div> 
+                      <div style="display: flex; justify-content: space-between;">
+                        <p><strong>Fecha de Creación: </strong></p>
+                        <p>{{ validacion?.fecha_creacion | date:'yyyy-MM-dd hh:mm:ss a':'UTC' }}</p>
+                      </div>
+                      <div style="display: flex; justify-content: space-between;">
+                        <p style="margin-right: 8px;"><strong>Comentario: </strong></p>
+                        <p>{{ validacion?.comentario ? validacion?.comentario : '-' }}</p>
+                      </div>
+                      <div *ngFor="let imagen of validacion.imagenes">
+                        <img src="{{imagen.imagen_url}}" alt="icon" class="header-icon" style="height: 350px; width: 100%;"/>
+                        <nz-divider></nz-divider>
+                      </div>
+                    </div>
+                  } @else if(item.code =='cantidad' && item.value > 0) {
+                    <div style="display: flex; justify-content: space-between;">
+                      <p><strong>{{ item.typeOption }}:</strong></p>
+                      <p>{{item.value}}</p>
+                    </div>
+                  } @else if(item.code =='fec_ini_vigencia'){
+                    <div style="display: flex; justify-content: space-between;">
+                      <p><strong>{{ item.typeOption }}:</strong></p>
+                      <p>{{item.value  | date:'yyyy-MM-dd':'UTC'}}</p>
+                    </div>
+                  } @else if(item.code =='fecha_creacion'){
+                    <div style="display: flex; justify-content: space-between;">
+                      <p><strong>{{ item.typeOption }}:</strong></p>
+                      <p>{{item.value  | date:'yyyy-MM-dd hh:mm:ss a':'UTC'}}</p>
+                    </div>
+                  } @else if(item.code !='cantidad'){
+                    <div style="display: flex; justify-content: space-between;">
+                      <p><strong>{{ item.typeOption }}:</strong></p>
+                      <p>{{item.value}}</p>
+                    </div>
+                  }@else if(item.code =='usuario_nombre'){
+                    <div>
+                      <p style="margin-bottom: 4px;"><strong>{{ item.typeOption }}:</strong></p>
+                      <p style="margin-bottom: 4px;">{{item.value}}</p>
+                    </div>
+                  }
+                </div>
+                <!-- <div [ngStyle]="{ marginTop: '15px'}">
+                  <nz-pagination
+                    [nzPageIndex]="aditionalExhibitionPageIndex"
+                    [nzTotal]="aditionalExhibitionTotal"
+                    [nzPageSize]="aditionalExhibitionPageSize"
+                    (nzPageIndexChange)="handleAditionalExhibition($event)"
+                  >
+                  </nz-pagination>
+                </div> -->
+              </nz-collapse-panel>
+            </nz-collapse>
+  
+            <ng-template #extraTpl>
+              <div class="collapse-custom-header">
+                <div class="collapse-header-content">
+                  <span class="header-text">{{ header.nombre }}</span>
+                </div>
+                <button nz-button nzType="text" nzDanger (click)="deleteItemValidity(header, $event)"><span nz-icon nzType="delete"
+                    nzTheme="fill"></span></button>
+              </div>
+            </ng-template>
+          </div>
+          <div [ngStyle]="{ marginTop: '15px'}">
+            <nz-pagination
+              [nzPageIndex]="aditionalExhibitionPageIndex"
+              [nzTotal]="aditionalExhibitionTotal"
+              [nzPageSize]="aditionalExhibitionPageSize"
+              (nzPageIndexChange)="handleAditionalExhibition($event)"
+            >
+            </nz-pagination>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="!isOnline">
+          <p style="margin: 0; color: red;">Para offline no esta disponible esta información</p>
+        </ng-container>
+      </div>
+    </nz-tab>
+    <nz-tab [nzTitle]="templateRenovable">
+      <div nz-col nzSpan="auto" class="container-collapse">
+        <div *ngFor="let header of listExhibitionsHeaderRenovable">
+          <nz-collapse>
+            <nz-collapse-panel [nzHeader]="extraTplRenovable" nzExpandedIcon="double-right">
+              <div *ngFor="let item of header.listExhibitionsOptions">
+                @if(item.code =='validaciones') {
+                  <nz-divider style="border-top: 1px solid rgba(0, 0, 0, 0.09);"></nz-divider>
+                  <p><strong>{{ item.typeOption }}:</strong></p>
+                  <div *ngFor="let validacion of item.value">
+                    <div style="display: flex; justify-content: space-between;">
+                      <p><strong>Usuario ID: </strong></p>
+                      <p>{{validacion.usuario?.usuario_id}}</p>
+                    </div> 
+                    <div style="display: flex; justify-content: space-between;">
+                      <p><strong>Usuario Nombre: </strong></p>
+                      <p>{{validacion.usuario?.nombre}}</p>
+                    </div> 
+                    <div style="display: flex; justify-content: space-between;">
+                      <p><strong>Fecha de Creación: </strong></p>
+                      <p>{{ validacion?.fecha_creacion | date:'yyyy-MM-dd hh:mm:ss a':'UTC' }}</p>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                      <p style="margin-right: 8px;"><strong>Comentario: </strong></p>
+                      <p>{{ validacion?.comentario ? validacion?.comentario : '-' }}</p>
+                    </div>
+                    <div *ngFor="let imagen of validacion.imagenes">
+                      <img src="{{imagen.imagen_url}}" alt="icon" class="header-icon" style="height: 350px; width: 100%;"/>
+                      <nz-divider></nz-divider>
+                    </div>
+                  </div>
+                } @else if(item.code =='cantidad' && item.value > 0) {
+                  <div style="display: flex; justify-content: space-between;">
+                    <p><strong>{{ item.typeOption }}:</strong></p>
+                    <p>{{item.value}}</p>
+                  </div>
+                } @else if(item.code =='fec_ini_vigencia'){
+                  <div style="display: flex; justify-content: space-between;">
+                    <p><strong>{{ item.typeOption }}:</strong></p>
+                    <p>{{item.value  | date:'yyyy-MM-dd':'UTC'}}</p>
+                  </div>
+                } @else if(item.code =='fecha_creacion'){
+                  <div style="display: flex; justify-content: space-between;">
+                    <p><strong>{{ item.typeOption }}:</strong></p>
+                    <p>{{item.value  | date:'yyyy-MM-dd hh:mm:ss a':'UTC'}}</p>
+                  </div>
+                }  @else if(item.code !='cantidad'){
+                  <div style="display: flex; justify-content: space-between;">
+                    <p><strong>{{ item.typeOption }}:</strong></p>
+                    <p>{{item.value}}</p>
+                  </div>
+                }
+              </div>
+              <!-- <div [ngStyle]="{ marginTop: '15px'}">
+                <nz-pagination
+                  [nzPageIndex]="aditionalExhibitionPageIndex"
+                  [nzTotal]="aditionalExhibitionTotal"
+                  [nzPageSize]="aditionalExhibitionPageSize"
+                  (nzPageIndexChange)="handleAditionalExhibition($event)"
+                >
+                </nz-pagination>
+              </div> -->
+            </nz-collapse-panel>
+          </nz-collapse>
+          <ng-template #extraTplRenovable>
+            <div class="collapse-custom-header">
+              <div class="collapse-header-content">
+                <span class="header-text">{{ header.nombre }}</span>
+              </div>
+              <div>
+                <ng-container *ngIf="isOnline">
+                  <button nz-button nzType="text" nzDanger (click)="deleteItemValidityRenovable(header,$event)"><span nz-icon nzType="delete"
+                    nzTheme="fill"></span></button>
+                </ng-container>
+                <button nz-button nzType="primary" nzGhost (click)="renovarExhibicion(header, $event)">Renovar</button>
+              </div>
+            </div>
+          </ng-template>
+        </div>
+        <div [ngStyle]="{ marginTop: '15px'}">
+          <nz-pagination
+            [nzPageIndex]="aditionalExhibitionRenovablePageIndex"
+            [nzTotal]="aditionalExhibitionTotalRenovable"
+            [nzPageSize]="aditionalExhibitionPageSize"
+            (nzPageIndexChange)="handleAditionalExhibitionRenovable($event)"
+          >
+          </nz-pagination>
+        </div>
+      </div>
+    </nz-tab>
+    <!-- <nz-tab nzTitle="Renovables"></nz-tab> -->
+  </nz-tabset>
+</div>
+
+<ng-template #titleTemplate>
+  <span (click)="loadAditionalExhibition()">Vigentes</span>
+</ng-template>
+
+<ng-template #templateRenovable>
+  <span (click)="loadAditionalExhibitionRenovable()">Renovables</span>
+</ng-template>
+
+
+<nz-modal [(nzVisible)]="isVisibleModalRenovar" [nzTitle]="'Modificar Fecha de Vigencia'" (nzOnCancel)="handleCancelModalRenovar()" (nzOnOk)="handleSaveModalRenovar()" [nzOkDisabled]="isOkDisabledModalRenovar">
+  <ng-container *nzModalContent>
+    <div>
+      <div class="content-modal">
+        <div *ngIf="selectPoc?.tipo === 'SMK'" class="content-check">
+          <label>Mueble</label>
+          <label nz-checkbox [(ngModel)]="objectExhibicionRenovar.tipo_mueble">Tiene Mueble?</label>
+        </div>
+        <div class="content-input">
+          <label>Fecha Inicio:</label>
+          <div>{{objectExhibicionRenovar.fecha_inicio_vigencia | date:'yyyy-MM-dd':'UTC'}}</div>
+        </div>
+        <div class="content-input">
+          <div nz-form-item>
+            <div>Fecha Fin:</div>
+            <div class="">
+              <nz-date-picker class="mobile-datepicker" #filterEndDatePickerRenovar [nzDisabledDate]="disabledStartDate"
+                nzAllowClear="false" nzFormat="yyyy-MM-dd" [(ngModel)]="objectExhibicionRenovar.endOfMonth" nzPlaceHolder="Fecha fin">
+              </nz-date-picker>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label>Comentarios:</label>
+          <textarea rows="2" nz-input  [(ngModel)]="objectExhibicionRenovar.comentario"></textarea>
+        </div>
+        <div class="content-input">
+          <app-photo-upload 
+            [table]="table" 
+            [nameContainer]="nameContainer" 
+            [maxImages]="5"
+            [maxWidth]="'calc(100vw - 135px)'"
+            [codeParent]="objectExhibicionRenovar.codeParent"
+            (filesChanged)="onFilesChangeExhibicionRenovar($event)">
+          </app-photo-upload>
+        </div>                     
+      </div>              
+    </div>
+  </ng-container>
+</nz-modal>
+
+<app-spinner-loading [loading]="loading"></app-spinner-loading>

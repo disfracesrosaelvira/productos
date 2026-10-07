@@ -1,0 +1,16 @@
+<div class="container-range-dates">
+  <div class="filters-date">
+    <nz-date-picker  nzFormat="yyyy-MM-dd" [nzDisabledDate]="disabledFilterStartDate"
+    nzAllowClear="false" [(ngModel)]="filterStartDate" nzPlaceHolder="Fecha inicio"
+    (nzOnOpenChange)="handleFilterStartDateOpenChange($event)"></nz-date-picker>
+  </div>
+  <div class="filters-date">
+    <nz-date-picker #filterEndDatePicker [nzDisabledDate]="disabledFilterEndDate"
+      nzAllowClear="false" nzFormat="yyyy-MM-dd" [(ngModel)]="filterEndDate" nzPlaceHolder="Fecha fin">
+    </nz-date-picker>
+  </div>
+  <button nz-button nzType="primary" (click)="applyDates()"><span nz-icon nzType="search" nzTheme="outline"></span></button>
+</div>
+
+
+  

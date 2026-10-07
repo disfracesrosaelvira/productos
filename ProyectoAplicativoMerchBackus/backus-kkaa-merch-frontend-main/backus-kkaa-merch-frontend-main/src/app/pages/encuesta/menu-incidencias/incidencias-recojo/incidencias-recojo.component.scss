@@ -1,0 +1,30 @@
+::ng-deep .ant-select-selection-item{
+  white-space: normal;
+}
+.card-content {
+  background-color: #2A2831;
+  color: #fff;
+  padding: 16px 8px 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  nz-typography {
+    color: #fff;
+  }
+  .custom-nz-select {
+    width: 100%;
+    border-radius: 5px;
+  }
+}
+.container-footer {
+  display: flex;
+  justify-content: flex-end;
+  background-color: #e6f6ff;
+  padding: 8px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}

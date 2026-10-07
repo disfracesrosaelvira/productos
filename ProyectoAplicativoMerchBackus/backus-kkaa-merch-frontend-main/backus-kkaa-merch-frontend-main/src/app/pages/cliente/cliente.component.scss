@@ -1,0 +1,56 @@
+// Contenido principal
+.page-content {
+  background-color: #292930;
+  padding: 1rem;
+  // width: 100%;
+}
+
+// Tarjeta de sucursales
+.card-header {
+  background-color: #2a2831;
+  box-shadow: 0 3px 8px rgba(172, 170, 170, 0.43);
+  border-top: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: none;
+  color: #fff;
+  padding: 12px 8px 12px 8px;
+  border-radius: 2px;
+
+  nz-typography {
+    color: #fff;
+  }
+}
+
+.card-content {
+  background-color: #2A2831;
+  box-shadow: 0 3px 8px rgba(172, 170, 170, 0.43);
+  border: 1px solid #ddd;
+  color: #fff;
+  padding: 12px 8px 14px 8px;
+  border-radius: 2px;
+
+  .card-list-item {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+}
+
+nz-card {
+  width: 100%;
+  background-color: #292930;
+  border: transparent;
+}
+::ng-deep .custom-nz-select .ant-select-selector {
+  border-radius: 8px !important;
+}
+::ng-deep .ant-btn-round.ant-btn-lg {
+  height: auto;
+  padding: 10px 20px;
+}
+::ng-deep .ant-layout-content {
+  background-color: #292930;;
+}

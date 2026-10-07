@@ -1,0 +1,64 @@
+<nz-modal
+  [(nzVisible)]="isModalVisible"
+  [nzTitle]="'Cambiar Supervisor'"
+  (nzOnCancel)="handleCancelModal()"
+  (nzOnOk)="handleSaveChanges()"
+  [nzOkText]="'Guardar'"
+  [nzOkDisabled]="!updateSupervisorForm.valid">
+  <ng-container *nzModalContent>
+    <form [formGroup]="updateSupervisorForm" class="container-form">
+      <p style="font-style: italic; font-weight: 900;">Supervisor a cambiar</p>
+      <div class="form-group">
+        <label><span>* </span>Nombre SV</label>
+        <nz-select
+          nzShowSearch
+          nzAllowClear
+          nzPlaceHolder="Seleccione un nombre sv"
+          formControlName="nombre_supervisor"
+          (ngModelChange)="onSupervisorChange($event)">
+          <nz-option
+            *ngFor="let supervisor of supervisors"
+            [nzLabel]="supervisor.nombre_sv"
+            [nzValue]="supervisor.nombre_sv">
+          </nz-option>
+        </nz-select>
+        <div *ngIf="updateSupervisorForm.get('nombre_supervisor')?.invalid && updateSupervisorForm.get('nombre_supervisor')?.touched" class="error-message">nombre sv es requerido</div>
+      </div>
+      <div class="form-group">
+        <label><span>* </span>Documento SV</label>
+        <input
+          formControlName="dni_supervisor"
+          nz-input
+          />
+        <div *ngIf="updateSupervisorForm.get('dni_supervisor')?.invalid && updateSupervisorForm.get('dni_supervisor')?.touched" class="error-message">
+          El documento sv es requerido.
+        </div>
+      </div>
+      <p style="font-style: italic; font-weight: 900; margin: 14px 0;">Supervisor actual</p>
+      <div class="form-group">
+        <label><span>* </span>Documento SV</label>
+        <input formControlName="documento_sv" nz-input [ngClass]="{'invalid-input': updateSupervisorForm.get('documento_sv')?.invalid && updateSupervisorForm.get('documento_sv')?.touched}" />
+        <div *ngIf="updateSupervisorForm.get('documento_sv')?.invalid && updateSupervisorForm.get('documento_sv')?.touched" class="error-message">documento sv es requerido</div>
+      </div>
+      <div class="form-group">
+        <label><span>* </span>Nombre SV</label>
+        <input formControlName="nombre_sv" nz-input [ngClass]="{'invalid-input': updateSupervisorForm.get('nombre_sv')?.invalid && updateSupervisorForm.get('nombre_sv')?.touched}" />
+        <div *ngIf="updateSupervisorForm.get('nombre_sv')?.invalid && updateSupervisorForm.get('nombre_sv')?.touched" class="error-message">nombre sv es requerido</div>
+      </div>
+      <!-- Campo Fecha de Inicio -->
+      <div class="form-group">
+        <label><span>* </span>Fecha de Inicio</label>
+        <nz-date-picker
+        formControlName="fecha_inicio"
+        nzFormat="dd/MM/yyyy"
+        nzPlaceHolder="Seleccione una fecha"
+        [nzDisabledDate]="disableFutureDates"
+        [ngClass]="{'invalid-input': updateSupervisorForm.get('fecha_inicio')?.invalid && updateSupervisorForm.get('fecha_inicio')?.touched}">
+        </nz-date-picker>
+        <div *ngIf="updateSupervisorForm.get('fecha_inicio')?.invalid && updateSupervisorForm.get('fecha_inicio')?.touched" class="error-message">
+        La fecha de inicio es requerida.
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,157 @@
+.card-header {
+  background-color: #2a2831;
+  box-shadow: 0 3px 8px rgba(172, 170, 170, 0.43);
+  border-top: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: none;
+  color:#fff;
+  padding: 12px 8px 12px 8px;
+  border-radius: 2px;
+
+  nz-typography{
+    color:#fff;
+  }
+  .breadcrumb-text {
+    font-weight: bold;
+    color:#fff;
+  }
+}
+
+.card-content {
+  background-color: #2A2831;
+  box-shadow: 0 3px 8px rgba(172, 170, 170, 0.43);
+  border: 1px solid #ddd;
+  color:#fff;
+  padding: 12px 8px 14px 8px;
+  border-radius: 2px;
+
+  nz-typography{
+    color:#fff;
+  }
+  .nz-select {
+    width: 100%;
+    border-radius: 5px;
+  }
+}
+
+nz-card {
+  background-color: transparent;
+}
+
+// .boton-foto [nz-button][nzSize="small"] {
+//   padding: 4px 8px;
+//   font-size: 12px;
+// }
+
+// .camera-container {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   justify-content: center;
+//   width: auto;
+//   height: auto;
+// }
+
+// .webcam-container {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   justify-content: center;
+//   width: auto;
+//   height: auto;
+// }
+
+// .captured-image-container {
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   width: 20vw;
+//   height: auto;
+// }
+
+.container-footer {
+  display: flex;
+  justify-content: flex-end;
+  background-color: #e6f6ff;
+  padding: 8px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.container-checked {
+  .title-checked {
+    text-align: center;
+    // nz-tag {
+    //   padding: 6px 0 6px 0;
+    //   text-align: center;
+    //   margin-bottom: 8px;
+    // }
+  }
+  .frentes-totales {
+    display: flex;
+    gap: 4px;
+    justify-content: space-between;
+    align-items: center;
+    label {
+      white-space: nowrap;
+      padding-right: 4px;
+    }
+  }
+}
+.container-group-collapse-panel {
+  padding-bottom: 4px;
+  .container-collapse-panel {
+    padding-bottom: 8px;
+    input {
+      width: 110px;
+      border: 1px solid #000;
+    }
+  }
+}
+
+.content-switch {
+  padding-bottom: 12px;
+  div {
+    display: flex;
+    align-items: center;
+    padding-bottom: 8px;
+    label {
+      color: #ddd;
+      margin-left: 8px;
+    }
+  }
+}
+
+::ng-deep .ant-collapse > .ant-collapse-item:last-child {
+  background-color: #FAFAFA;
+}
+::ng-deep .ant-list-item {
+  padding: 8px 0;
+}
+::ng-deep .ant-collapse-ghost > .ant-collapse-item > .ant-collapse-content > .ant-collapse-content-box {
+  padding-top: 0;
+}
+::ng-deep .ant-list-split .ant-list-item {
+  border-bottom: 1px solid darkgrey;
+}
+::ng-deep .ant-switch {
+  border: 1px solid #ddd;
+}
+::ng-deep .ant-btn {
+  border-radius: 8px;
+}
+
+.error-text {
+  color: red;
+}
+::ng-deep .ant-input {
+  border-radius: 4px;
+}
+::ng-deep .ant-card-bordered {
+  border: none;
+}

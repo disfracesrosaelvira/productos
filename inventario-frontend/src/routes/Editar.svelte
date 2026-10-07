@@ -1,6 +1,6 @@
 <script>
-  import { onMount } from 'svelte'
-  import imageCompression from 'browser-image-compression'
+  import { onMount, onDestroy } from 'svelte'
+  import ImagePicker from '../lib/components/ImagePicker.svelte'
   import { api, listarCategorias } from '../lib/api.js'
   import { navegar } from '../lib/router.svelte.js'
 
@@ -9,8 +9,9 @@
 
   let form = $state({ name: '', description: '', price: '', category_id: '', active: true })
   let categorias = $state([])
+  let fotosExistentes = $state([])
+  let pendientes = $state([])
   let guardando = $state(false)
-  let subiendo = $state(false)
   let error = $state('')
 
   onMount(async () => {
@@ -25,10 +26,15 @@
           category_id: p.category_id ?? '',
           active: p.active,
         }
+        fotosExistentes = p.product_images ?? []
       } catch (e) {
         error = e.message
       }
     }
+  })
+
+  onDestroy(() => {
+    for (const f of pendientes) URL.revokeObjectURL(f.url)
   })
 
   async function guardar(evento) {
@@ -44,32 +50,18 @@
         active: form.active,
       }
       const prod = esNuevo ? await api.crearProducto(body) : await api.actualizarProducto(id, body)
+
+      for (const foto of pendientes) {
+        await api.subirImagen(prod.id, foto.file, false)
+      }
+      for (const f of pendientes) URL.revokeObjectURL(f.url)
+      pendientes = []
+
       navegar(`/producto/${prod.id}`)
     } catch (e) {
       error = e.message
     } finally {
       guardando = false
-    }
-  }
-
-  async function subirImagen(evento) {
-    const file = evento.target.files?.[0]
-    if (!file) return
-    subiendo = true
-    error = ''
-    try {
-      const comprimido = await imageCompression(file, {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 1600,
-        useWebWorker: true,
-      })
-      await api.subirImagen(id, comprimido, false)
-      error = ''
-    } catch (e) {
-      error = e.message
-    } finally {
-      subiendo = false
-      evento.target.value = ''
     }
   }
 </script>
@@ -117,18 +109,37 @@
       <input type="checkbox" bind:checked={form.active} /> Activo
     </label>
 
+    <!-- Fotos -->
+    <div class="border-t border-slate-100 pt-4 space-y-3">
+      <div>
+        <h2 class="font-medium">Fotos</h2>
+        <p class="text-xs text-slate-500">
+          Toma una foto con la cámara o súbela desde la galería. Se comprimen automáticamente antes de subir.
+          {#if esNuevo}Se guardarán al crear el producto.{/if}
+        </p>
+      </div>
+
+      {#if fotosExistentes.length > 0}
+        <div>
+          <p class="text-xs text-slate-500 mb-1">Ya guardadas:</p>
+          <div class="grid grid-cols-4 gap-2">
+            {#each fotosExistentes as img (img.id)}
+              <img src={img.image_url} alt="" class="aspect-square w-full object-cover rounded border border-slate-200" />
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      <ImagePicker bind:archivos={pendientes} deshabilitado={guardando} />
+    </div>
+
     <button type="submit" disabled={guardando}
       class="rounded bg-slate-900 text-white px-4 py-2 hover:bg-slate-800 disabled:opacity-60">
-      {guardando ? 'Guardando…' : 'Guardar'}
+      {guardando
+        ? 'Guardando…'
+        : esNuevo
+          ? (pendientes.length ? 'Crear y subir fotos' : 'Crear producto')
+          : (pendientes.length ? 'Guardar y subir fotos' : 'Guardar')}
     </button>
   </form>
-
-  {#if !esNuevo}
-    <div class="bg-white rounded-lg shadow p-4 space-y-2">
-      <h2 class="font-medium">Agregar foto</h2>
-      <p class="text-xs text-slate-500">Se comprime en el navegador y se sube al servidor.</p>
-      <input type="file" accept="image/*" onchange={subirImagen} disabled={subiendo} />
-      {#if subiendo}<p class="text-sm text-slate-500">Subiendo…</p>{/if}
-    </div>
-  {/if}
 </div>

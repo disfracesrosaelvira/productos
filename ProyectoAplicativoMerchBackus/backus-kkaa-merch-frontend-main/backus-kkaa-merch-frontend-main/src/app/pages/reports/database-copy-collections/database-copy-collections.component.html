@@ -1,0 +1,51 @@
+<div class="container-reports">
+    <div class="container-content">
+        <h4>Generar Backup de Colección</h4>
+        <div class="list-export-collections">
+            <!-- <div class="filters-date">
+                <nz-date-picker  nzFormat="yyyy-MM-dd" [nzDisabledDate]="disabledFilterStartDate"
+                    nzAllowClear="false" [(ngModel)]="filterStartDate" nzPlaceHolder="Fecha inicio"
+                    (nzOnOpenChange)="handleFilterStartDateOpenChange($event)"></nz-date-picker>
+            </div>
+            <div class="filters-date">
+                <nz-date-picker #filterEndDatePicker [nzDisabledDate]="disabledFilterEndDate"
+                    nzAllowClear="false" nzFormat="yyyy-MM-dd" [(ngModel)]="filterEndDate" nzPlaceHolder="Fecha fin">
+                </nz-date-picker>
+            </div> -->
+            <div class="filters-date">
+                <nz-date-picker #filterStartDatePicker
+                    nzFormat="yyyy-MM-dd" 
+                    [nzDisabledDate]="disabledFilterStartDate"
+                    nzAllowClear="true" 
+                    [(ngModel)]="filterStartDate" 
+                    nzPlaceHolder="Fecha inicio"
+                    (nzOnOpenChange)="handleFilterStartDateOpenChange($event)">
+                </nz-date-picker>
+            </div>
+            <div class="filters-date">
+                <nz-date-picker #filterEndDatePicker 
+                    [nzDisabledDate]="disabledFilterEndDate"
+                    nzAllowClear="true" 
+                    nzFormat="yyyy-MM-dd" 
+                    [(ngModel)]="filterEndDate" 
+                    nzPlaceHolder="Fecha fin">
+                </nz-date-picker>
+            </div>
+            <div class="content-select">
+                <nz-select
+                    nzShowSearch nzAllowClear
+                    [(ngModel)]="selectedCollection"
+                    [nzSize]="'default'"
+                    nzPlaceHolder="Seleccione una colección">
+                    <nz-option *ngFor="let collection of collections" [nzLabel]="collection" [nzValue]="collection"></nz-option>
+                </nz-select>
+            </div>
+            <button nz-button nzType="primary" (click)="downloadBackup()" [disabled]="!selectedCollection || isLoading">
+                <span nz-icon nzType="download" nzTheme="outline"></span>
+                Descargar
+            </button>
+        </div>
+    </div>
+</div>
+
+<app-spinner-loading [loading]="isLoading"></app-spinner-loading>

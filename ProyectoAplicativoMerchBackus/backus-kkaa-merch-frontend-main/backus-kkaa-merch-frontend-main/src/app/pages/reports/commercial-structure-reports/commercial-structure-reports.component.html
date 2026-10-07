@@ -1,0 +1,118 @@
+<div class="container-reports">
+  <div class="container-content">
+    <h4>Estructura Comercial</h4>
+    <div class="content-header">
+      <button nz-button nzType="primary" (click)="openCreateModal()"><span nz-icon nzType="plus" nzTheme="outline"></span></button>
+      <div class="button-excel">
+        <span (click)="exportExcel()" nz-icon nzType="file-excel" nzTheme="outline" class="icon-excel"></span>
+      </div>
+    </div>
+    <nz-table #basicTable [nzData]="listEstructuraComercial" [nzLoading]="isLoading" nzShowPagination="false" [ngStyle]="{whiteSpace: 'nowrap'}"  nzSize="small" [nzScroll]="{ x: 'auto' }">
+      <thead>
+        <tr>
+          <th nzWidth="auto">
+            POC
+          </th>
+          <th nzWidth="auto">POC Nombre</th>
+          <th nzWidth="auto">POC Cadena</th>
+          <th nzWidth="auto">POC Backus</th>
+          <th nzWidth="auto">POC Nombre Planning</th>
+          <th nzWidth="auto">
+            POC Tipo
+            <app-filter-table-commercial-estructure-reports
+              textPlaceholder="Buscar POC Tipo"
+              [filterItems]="columnFilters.poc_tipo"
+              (changeFilterItems)="handleFilter($event, 'poc-tipo')">
+            </app-filter-table-commercial-estructure-reports>
+          </th>
+          <th nzWidth="auto">
+            Documento SV
+            <app-filter-table-commercial-estructure-reports
+              textPlaceholder="Buscar Documento SV"
+              [filterItems]="columnFilters.documento_sv"
+              (changeFilterItems)="handleFilter($event, 'documento-sv')">
+          </app-filter-table-commercial-estructure-reports>
+          </th>
+          <th nzWidth="auto">
+            Nombre SV
+            <app-filter-table-commercial-estructure-reports
+              textPlaceholder="Buscar Nombre SV"
+              [filterItems]="columnFilters.nombre_sv"
+              (changeFilterItems)="handleFilter($event, 'nombre-sv')">
+            </app-filter-table-commercial-estructure-reports>
+          </th>
+          <th nzWidth="auto">
+            Documento BDR
+            <app-filter-table-commercial-estructure-reports
+              textPlaceholder="Buscar Documento BDR"
+              [filterItems]="columnFilters.nombre_bdr"
+              (changeFilterItems)="handleFilter($event, 'nombre-bdr')">
+            </app-filter-table-commercial-estructure-reports>
+          </th>
+          <th nzWidth="auto">Nombre BDR</th>
+          <th nzWidth="auto">
+            Estado
+            <app-filter-table-commercial-estructure-reports
+              textPlaceholder="Buscar Estado"
+              [filterItems]="columnFilters.estado"
+              (changeFilterItems)="handleFilter($event, 'estado')">
+            </app-filter-table-commercial-estructure-reports>
+          </th>
+          <th nzWidth="auto">
+            Usuario ID Creación
+            <app-filter-table-commercial-estructure-reports
+              textPlaceholder="Buscar Usuario ID"
+              [filterItems]="columnFilters.usuario_id_creacion"
+              (changeFilterItems)="handleFilter($event, 'usuario-id-creacion')">
+            </app-filter-table-commercial-estructure-reports>
+          </th>
+          <!-- el de la prueba -->
+          <th nzWidth="auto">Fecha Creación</th>
+          <th nzWidth="auto">Fecha Actualización</th>
+          <th nzWidth="auto">Usuario Id Actualización</th>
+          <th nzWidth="auto" nzRight>Editar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let data of basicTable.data">
+          <td>{{ data.poc }}</td>
+          <td>{{ data.poc_nombre }}</td>
+          <td>{{ data.poc_cadena }}</td>
+          <td>{{ data.poc_backus }}</td>
+          <td>{{ data.poc_nombre_planning }}</td>
+          <td>{{ data.poc_tipo }}</td> 
+          <td>{{ data.documento_sv }}</td>
+          <td>{{ data.nombre_sv }}</td>
+          <td>{{ data.documento_bdr }}</td>
+          <td>{{ data.nombre_bdr }}</td>
+          <td>{{ data.estado == 1 ? 'Activo' : 'Inactivo' }}</td>
+          <td>{{ data.usuario_id_creacion }}</td>
+          <td>{{ data.fecha_creacion | date:'yyyy-MM-dd hh:mm a':'UTC' }}</td>
+          <td>{{ data.fecha_actualizacion | date:'yyyy-MM-dd hh:mm a':'UTC' }}</td>
+          <td>{{ data.usuario_id_actualizacion }}</td>
+          <td nzRight style="text-align: center;">
+            <span nz-icon nzType="edit" nzTheme="outline" (click)="getEstructuraComercialById(data._id)" style="font-size: 20px;"></span>
+          </td>     
+        </tr>
+      </tbody>
+    </nz-table>
+    <div [ngStyle]="{ marginTop: '15px'}" style="display: flex; align-items: center;">
+      <nz-pagination
+        [nzPageIndex]="pageIndex"
+        [nzTotal]="totalDocs"
+        [nzPageSize]="pageSize"
+        (nzPageIndexChange)="handlePageEvent($event)"
+      >
+      </nz-pagination>
+      <span style="margin-left: 8px; text-align: center;">Total: {{ setFixedToNumber(totalDocs) }} registros</span>
+    </div>
+  </div>
+</div>
+<app-spinner-loading [loading]="isLoadingGeneric"></app-spinner-loading>
+<app-dynamic-form-commercial-structure
+  [isVisible]="isModalVisible" 
+  [structureData]="currentStructureData"
+  [isEditMode]="isEditing"
+  (closeModal)="handleCloseModal()" 
+  (saveChanges)="handleSaveChanges($event)">
+</app-dynamic-form-commercial-structure>

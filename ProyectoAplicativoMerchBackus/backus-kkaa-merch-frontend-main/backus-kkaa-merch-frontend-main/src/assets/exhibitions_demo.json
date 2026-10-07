@@ -1,0 +1,20 @@
+[
+    {
+      "nombre": "Electro - Cross",
+      "listExhibitionsOptions": [
+        { "typeOption": "Zona", "value": "Electro", "code": "zona" },
+        { "typeOption": "Tipo_exhibicion", "value": "Cross", "code": "tipo_exhibicion" },
+        { "typeOption": "Dias Vigencia", "value": "1", "code": "dias_vigencia" },
+        { "typeOption": "Foto", "value": "https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1", "code": "file" }
+      ]
+    },
+    {
+      "nombre": "Pescados - Estadio",
+      "listExhibitionsOptions": [
+        { "typeOption": "Zona", "value": "Pescados", "code": "zona" },
+        { "typeOption": "Tipo_exhibicion", "value": "Estadio", "code": "tipo_exhibicion" },
+        { "typeOption": "Dias Vigencia", "value": "3", "code": "dias_vigencia" },
+        { "typeOption": "Foto", "value": "https://via.placeholder.com/30", "code": "file" }
+      ]
+    }
+  ]

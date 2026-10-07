@@ -1,0 +1,8 @@
+.container-range-dates {
+  display: flex;
+  gap: 2px;
+}
+
+::ng-deep .ant-picker-footer .ant-picker-today-btn {
+  display: none;
+}

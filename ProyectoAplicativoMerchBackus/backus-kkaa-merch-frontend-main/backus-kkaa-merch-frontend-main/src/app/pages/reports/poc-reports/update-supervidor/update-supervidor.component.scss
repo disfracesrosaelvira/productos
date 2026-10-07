@@ -1,0 +1,26 @@
+.container-form {
+    display: flex;
+    gap: 4px;
+    flex-direction: column;
+      .form-group {
+          display: flex;
+          flex-direction: column;
+          label {
+            span { color: red;}
+          }
+      }
+}
+
+.invalid-input {
+    border-color: red;
+}
+    
+.error-message {
+    color: red;
+    font-size: 12px;
+}
+
+.disabled-input {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}

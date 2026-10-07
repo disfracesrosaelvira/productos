@@ -1,0 +1,346 @@
+<div nz-menu nzTheme="dark" nzMode="inline">
+  <div class="item item-year">
+    <p class="item-title"><label>Año</label></p>
+    <nz-date-picker
+      nzMode="year"
+      [(ngModel)]="filters.anio.value"
+      (ngModelChange)="onYearChange($event)"
+      [nzDisabledDate]="disabledDate"
+      [nzAllowClear]="false"
+    ></nz-date-picker>
+  </div>
+  <div class="item item-mes">
+    <p class="item-title"><label>Mes</label></p>
+    <button nz-button nz-dropdown [nzDropdownMenu]="menuMes" [nzPlacement]="'bottomLeft'" [(nzVisible)]="filters.meses.isDropdownVisible" (nzVisibleChange)="filters.meses.isDropdownVisible = $event">
+      {{ tempFilters.meses.titleSelect }}
+      <span nz-icon nzType="down"></span>
+    </button>
+    <nz-dropdown-menu #menuMes="nzDropdownMenu" nzOverlayClassName="custom-dropdown-menu">
+      <div class="dropdown-content">
+        <ul nz-menu nzSelectable>
+          <div class="search-item">
+            <input nz-input placeholder="Buscar..." [(ngModel)]="tempFilters.meses.searchTerm" (ngModelChange)="onSearch('meses')">
+          </div>
+          <li nz-menu-item class="button-clear-filter">
+            <button nz-button nzType="text" nzBlock (click)="removeFilterSelected('meses')">
+              <span nz-icon nzType="filter" nzTheme="fill"></span>
+              Borrar Filtro
+            </button>
+          </li>
+          <li nz-menu-item>
+            <label nz-checkbox [(ngModel)]="tempFilters.meses.selectAllChecked" (ngModelChange)="onSelectAllChange($event, 'meses')">
+              Seleccionar todos
+            </label>
+          </li>
+          <li nz-menu-item *ngFor="let item of getFilteredItems('meses')">
+            <label nz-checkbox [(ngModel)]="item.checked" (ngModelChange)="onItemChange('meses')" (click)="$event.stopPropagation()">
+              {{ item.label }}
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown-footer">
+        <button nz-button nzSize="small" nzType="default" (click)="onCancelApplyFilters('meses'); filters.meses.isDropdownVisible = false;">Cancelar</button>
+        <button nz-button nzSize="small" nzType="primary" (click)="onAcceptApplyFilters('meses'); filters.meses.isDropdownVisible = false;">Aceptar</button>
+      </div>
+    </nz-dropdown-menu>
+  </div>
+  <div class="item item-cliente">
+    <p class="item-title"><label>Cliente</label></p>
+    <button nz-button nz-dropdown [nzDropdownMenu]="menuCliente" [nzPlacement]="'bottomLeft'" [(nzVisible)]="filters.cliente.isDropdownVisible" (nzVisibleChange)="filters.cliente.isDropdownVisible = $event">
+      {{ tempFilters.cliente.titleSelect }}
+      <span nz-icon nzType="down"></span>
+    </button>
+    <nz-dropdown-menu #menuCliente="nzDropdownMenu">
+      <div class="dropdown-content">
+        <ul nz-menu nzSelectable>
+          <li nz-menu-item class="button-clear-filter">
+            <button nz-button nzType="text" nzBlock (click)="removeFilterSelected('cliente')">
+              <span nz-icon nzType="filter" nzTheme="fill"></span>
+              Borrar Filtro
+            </button>
+          </li>
+          <!-- <li nz-menu-item>
+            <label nz-checkbox [(ngModel)]="tempFilters.cliente.selectAllChecked" (ngModelChange)="onSelectAllChange($event, 'cliente')">
+              Seleccionar todos
+            </label>
+          </li> -->
+          <li nz-menu-item *ngFor="let item of tempFilters.cliente.list">
+            <label nz-checkbox [(ngModel)]="item.checked" (ngModelChange)="onItemChange('cliente')" (click)="$event.stopPropagation()">
+              {{ item.label }}
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown-footer">
+        <button nz-button nzSize="small" nzType="default" (click)="onCancelApplyFilters('cliente'); filters.cliente.isDropdownVisible = false;">Cancelar</button>
+        <button nz-button nzSize="small" nzType="primary" (click)="onAcceptApplyFilters('cliente'); filters.cliente.isDropdownVisible = false;">Aceptar</button>
+      </div>
+    </nz-dropdown-menu>
+  </div>
+  <ng-container *ngIf="getVisibleFilter('linea')">
+    <div class="item item-linea">
+      <p class="item-title"><label>Linea</label></p>
+      <button nz-button nz-dropdown [nzDropdownMenu]="menuLinea" [nzPlacement]="'bottomLeft'" [(nzVisible)]="filters.linea.isDropdownVisible" (nzVisibleChange)="filters.linea.isDropdownVisible = $event">
+        {{ filters.linea.titleSelect }}
+        <span nz-icon nzType="down"></span>
+      </button>
+      <nz-dropdown-menu #menuLinea="nzDropdownMenu">
+        <div class="dropdown-content">
+          <ul nz-menu nzSelectable>
+            <!-- <div class="search-item" (click)="$event.stopPropagation()">
+              <input nz-input placeholder="Buscar..." [(ngModel)]="filters.linea.searchTerm" (ngModelChange)="onSearch('linea')">
+            </div> -->
+            <li nz-menu-item class="button-clear-filter">
+              <button nz-button nzType="text" nzBlock (click)="removeFilterSelected('linea')">
+                <span nz-icon nzType="filter" nzTheme="fill"></span>
+                Borrar Filtro
+              </button>
+            </li>
+            <!-- <li nz-menu-item>
+              <label nz-checkbox [(ngModel)]="filters.linea.selectAllChecked" (ngModelChange)="onSelectAllChange($event, 'linea')">
+                Seleccionar todos
+              </label>
+            </li> -->
+            <li nz-menu-item *ngFor="let item of getFilteredItems('linea')">
+              <label nz-checkbox [(ngModel)]="item.checked" (ngModelChange)="onItemChange('linea')" (click)="$event.stopPropagation()">
+                {{ item.label }}
+              </label>
+            </li>
+          </ul>
+        </div>
+        <div class="dropdown-footer">
+          <button nz-button nzSize="small" nzType="default" (click)="onCancelApplyFilters('linea'); filters.linea.isDropdownVisible = false;">Cancelar</button>
+          <button nz-button nzSize="small" nzType="primary" (click)="onAcceptApplyFilters('linea'); filters.linea.isDropdownVisible = false;">Aceptar</button>
+        </div>
+      </nz-dropdown-menu>
+    </div>
+  </ng-container>
+  <div class="item item-region">
+    <p class="item-title"><label>Region</label></p>
+    <button nz-button nz-dropdown [nzDropdownMenu]="menuRegion" [nzPlacement]="'bottomLeft'" [(nzVisible)]="filters.region.isDropdownVisible" (nzVisibleChange)="filters.region.isDropdownVisible = $event">
+      {{ tempFilters.region.titleSelect }}
+      <span nz-icon nzType="down"></span>
+    </button>
+    <nz-dropdown-menu #menuRegion="nzDropdownMenu">
+      <div class="dropdown-content">
+        <ul nz-menu nzSelectable>
+          <li nz-menu-item class="button-clear-filter">
+            <button nz-button nzType="text" nzBlock (click)="removeFilterSelected('region')">
+              <span nz-icon nzType="filter" nzTheme="fill"></span>
+              Borrar Filtro
+            </button>
+          </li>
+          <!-- <li nz-menu-item>
+            <label nz-checkbox [(ngModel)]="tempFilters.region.selectAllChecked" (ngModelChange)="onSelectAllChange($event, 'region')">
+              Seleccionar todos
+            </label>
+          </li> -->
+          <li nz-menu-item *ngFor="let item of tempFilters.region.list">
+            <label nz-checkbox [(ngModel)]="item.checked" (ngModelChange)="onItemChange('region')" (click)="$event.stopPropagation()">
+              {{ item.label }}
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown-footer">
+        <button nz-button nzSize="small" nzType="default" (click)="onCancelApplyFilters('region'); filters.region.isDropdownVisible = false;">Cancelar</button>
+        <button nz-button nzSize="small" nzType="primary" (click)="onAcceptApplyFilters('region'); filters.region.isDropdownVisible = false;">Aceptar</button>
+      </div>
+    </nz-dropdown-menu>
+  </div>
+  <div class="item item-gerencia">
+    <p class="item-title"><label>Gerencia</label></p>
+    <button nz-button nz-dropdown [nzDropdownMenu]="menuGerencia" [nzPlacement]="'bottomLeft'" [(nzVisible)]="filters.gerencia.isDropdownVisible" (nzVisibleChange)="filters.gerencia.isDropdownVisible = $event">
+      {{ tempFilters.gerencia.titleSelect }}
+      <span nz-icon nzType="down"></span>
+    </button>
+    <nz-dropdown-menu #menuGerencia="nzDropdownMenu">
+      <div class="dropdown-content">
+        <ul nz-menu nzSelectable>
+          <div class="search-item" (click)="$event.stopPropagation()">
+            <input nz-input placeholder="Buscar..." [(ngModel)]="tempFilters.gerencia.searchTerm" (ngModelChange)="onSearch('gerencia')">
+          </div>
+          <li nz-menu-item class="button-clear-filter">
+            <button nz-button nzType="text" nzBlock (click)="removeFilterSelected('gerencia')">
+              <span nz-icon nzType="filter" nzTheme="fill"></span>
+              Borrar Filtro
+            </button>
+          </li>
+          <!-- <li nz-menu-item>
+            <label nz-checkbox [(ngModel)]="tempFilters.gerencia.selectAllChecked" (ngModelChange)="onSelectAllChange($event, 'gerencia')">
+              Seleccionar todos
+            </label>
+          </li> -->
+          <li nz-menu-item *ngFor="let item of getFilteredItems('gerencia')">
+            <label nz-checkbox [(ngModel)]="item.checked" (ngModelChange)="onItemChange('gerencia')" (click)="$event.stopPropagation()">
+              {{ item.label }}
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown-footer">
+        <button nz-button nzSize="small" nzType="default" (click)="onCancelApplyFilters('gerencia'); filters.gerencia.isDropdownVisible = false;">Cancelar</button>
+        <button nz-button nzSize="small" nzType="primary" (click)="onAcceptApplyFilters('gerencia'); filters.gerencia.isDropdownVisible = false;">Aceptar</button>
+      </div>
+    </nz-dropdown-menu>
+  </div>
+  <div class="item item-cadena">
+    <p class="item-title"><label>Cadena</label></p>
+    <button nz-button nz-dropdown [nzDropdownMenu]="menuCadena" [nzPlacement]="'bottomLeft'" [(nzVisible)]="filters.cadena.isDropdownVisible" (nzVisibleChange)="filters.cadena.isDropdownVisible = $event">
+      {{ tempFilters.cadena.titleSelect }}
+      <span nz-icon nzType="down"></span>
+    </button>
+    <nz-dropdown-menu #menuCadena="nzDropdownMenu">
+      <div class="dropdown-content">
+        <ul nz-menu nzSelectable>
+          <div class="search-item" (click)="$event.stopPropagation()">
+            <input nz-input placeholder="Buscar..." [(ngModel)]="tempFilters.cadena.searchTerm" (ngModelChange)="onSearch('cadena')">
+          </div>
+          <li nz-menu-item class="button-clear-filter">
+            <button nz-button nzType="text" nzBlock (click)="removeFilterSelected('cadena')">
+              <span nz-icon nzType="filter" nzTheme="fill"></span>
+              Borrar Filtro
+            </button>
+          </li>
+          <!-- <li nz-menu-item>
+            <label nz-checkbox [(ngModel)]="tempFilters.cadena.selectAllChecked" (ngModelChange)="onSelectAllChange($event, 'cadena')">
+              Seleccionar todos
+            </label>
+          </li> -->
+          <li nz-menu-item *ngFor="let item of getFilteredItems('cadena')">
+            <label nz-checkbox [(ngModel)]="item.checked" (ngModelChange)="onItemChange('cadena')" (click)="$event.stopPropagation()">
+              {{ item.label }}
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown-footer">
+        <button nz-button nzSize="small" nzType="default" (click)="onCancelApplyFilters('cadena'); filters.cadena.isDropdownVisible = false;">Cancelar</button>
+        <button nz-button nzSize="small" nzType="primary" (click)="onAcceptApplyFilters('cadena'); filters.cadena.isDropdownVisible = false;">Aceptar</button>
+      </div>
+    </nz-dropdown-menu>
+  </div>
+  <div class="item item-tipo">
+    <p class="item-title"><label>Tipo</label></p>
+    <button nz-button nz-dropdown [nzDropdownMenu]="menuTipo" [nzPlacement]="'bottomLeft'" [(nzVisible)]="filters.tipo.isDropdownVisible" (nzVisibleChange)="filters.tipo.isDropdownVisible = $event">
+      {{ tempFilters.tipo.titleSelect }}
+      <span nz-icon nzType="down"></span>
+    </button>
+    <nz-dropdown-menu #menuTipo="nzDropdownMenu">
+      <div class="dropdown-content">
+        <ul nz-menu nzSelectable>
+          <div class="search-item" (click)="$event.stopPropagation()">
+            <input nz-input placeholder="Buscar..." [(ngModel)]="tempFilters.tipo.searchTerm" (ngModelChange)="onSearch('tipo')">
+          </div>
+          <li nz-menu-item class="button-clear-filter">
+            <button nz-button nzType="text" nzBlock (click)="removeFilterSelected('tipo')">
+              <span nz-icon nzType="filter" nzTheme="fill"></span>
+              Borrar Filtro
+            </button>
+          </li>
+          <!-- <li nz-menu-item>
+            <label nz-checkbox [(ngModel)]="tempFilters.tipo.selectAllChecked" (ngModelChange)="onSelectAllChange($event, 'tipo')">
+              Seleccionar todos
+            </label>
+          </li> -->
+          <li nz-menu-item *ngFor="let item of getFilteredItems('tipo')">
+            <label nz-checkbox [(ngModel)]="item.checked" (ngModelChange)="onItemChange('tipo')" (click)="$event.stopPropagation()">
+              {{ item.label }}
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown-footer">
+        <button nz-button nzSize="small" nzType="default" (click)="onCancelApplyFilters('tipo'); filters.tipo.isDropdownVisible = false;">Cancelar</button>
+        <button nz-button nzSize="small" nzType="primary" (click)="onAcceptApplyFilters('tipo'); filters.tipo.isDropdownVisible = false;">Aceptar</button>
+      </div>
+    </nz-dropdown-menu>
+  </div>
+  <div class="item item-supervisor">
+    <p class="item-title"><label>Supervisor</label></p>
+    <button nz-button nz-dropdown [nzDropdownMenu]="menuSupervisor" [nzPlacement]="'bottomLeft'" [(nzVisible)]="filters.supervisor.isDropdownVisible" (nzVisibleChange)="filters.supervisor.isDropdownVisible = $event">
+      {{ tempFilters.supervisor.titleSelect }}
+      <span nz-icon nzType="down"></span>
+    </button>
+    <nz-dropdown-menu #menuSupervisor="nzDropdownMenu">
+      <div class="dropdown-content">
+        <ul nz-menu nzSelectable>
+          <div class="search-item" (click)="$event.stopPropagation()">
+            <input nz-input placeholder="Buscar..." [(ngModel)]="tempFilters.supervisor.searchTerm" (ngModelChange)="onSearch('supervisor')">
+          </div>
+          <li nz-menu-item class="button-clear-filter">
+            <button nz-button nzType="text" nzBlock (click)="removeFilterSelected('supervisor')">
+              <span nz-icon nzType="filter" nzTheme="fill"></span>
+              Borrar Filtro
+            </button>
+          </li>
+          <!-- <li nz-menu-item>
+            <label nz-checkbox [(ngModel)]="tempFilters.supervisor.selectAllChecked" (ngModelChange)="onSelectAllChange($event, 'supervisor')">
+              Seleccionar todos
+            </label>
+          </li> -->
+          <li nz-menu-item *ngFor="let item of getFilteredItems('supervisor')">
+            <label nz-checkbox [(ngModel)]="item.checked" (ngModelChange)="onItemChange('supervisor')" (click)="$event.stopPropagation()">
+              {{ item.label }}
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown-footer">
+        <button nz-button nzSize="small" nzType="default" (click)="onCancelApplyFilters('supervisor'); filters.supervisor.isDropdownVisible = false;">Cancelar</button>
+        <button nz-button nzSize="small" nzType="primary" (click)="onAcceptApplyFilters('supervisor'); filters.supervisor.isDropdownVisible = false;">Aceptar</button>
+      </div>
+    </nz-dropdown-menu>
+  </div>
+  <div class="item item-tienda">
+    <p class="item-title"><label>Tienda</label></p>
+    <button nz-button nz-dropdown [nzDropdownMenu]="menuTienda" [nzPlacement]="'bottomLeft'" [(nzVisible)]="filters.tienda.isDropdownVisible" (nzVisibleChange)="filters.tienda.isDropdownVisible = $event">
+      {{ tempFilters.tienda.titleSelect }}
+      <span nz-icon nzType="down"></span>
+    </button>
+    <nz-dropdown-menu #menuTienda="nzDropdownMenu">
+      <div class="dropdown-content">
+        <ul nz-menu nzSelectable>
+          <div class="search-item" (click)="$event.stopPropagation()">
+            <input nz-input placeholder="Buscar..." [(ngModel)]="tempFilters.tienda.searchTerm" (ngModelChange)="onSearch('tienda')">
+          </div>
+          <li nz-menu-item class="button-clear-filter">
+            <button nz-button nzType="text" nzBlock (click)="removeFilterSelected('tienda')">
+              <span nz-icon nzType="filter" nzTheme="fill"></span>
+              Borrar Filtro
+            </button>
+          </li>
+          <!-- <li nz-menu-item>
+            <label nz-checkbox [(ngModel)]="tempFilters.tienda.selectAllChecked" (ngModelChange)="onSelectAllChange($event, 'tienda')">
+              Seleccionar todos
+            </label>
+          </li> -->
+          <li nz-menu-item *ngFor="let item of getFilteredItems('tienda')">
+            <label nz-checkbox [(ngModel)]="item.checked" (ngModelChange)="onItemChange('tienda')" (click)="$event.stopPropagation()">
+              {{ item.label }}
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown-footer">
+        <button nz-button nzSize="small" nzType="default" (click)="onCancelApplyFilters('tienda'); filters.tienda.isDropdownVisible = false;">Cancelar</button>
+        <button nz-button nzSize="small" nzType="primary" (click)="onAcceptApplyFilters('tienda'); filters.tienda.isDropdownVisible = false;">Aceptar</button>
+      </div>
+    </nz-dropdown-menu>
+  </div>
+  <ng-container *ngIf="getVisibleFilter('select-exhibicion')">
+    <div class="item item-exhibicion-adicional-competencia">
+      <p class="item-title"><label>Exhibición</label></p>
+      <nz-select
+        nzShowSearch
+        nzPlaceHolder="Seleccione"
+        [(ngModel)]="selectExhibicionAdicionalOrContraprestada"
+        (ngModelChange)="onChangeExhibicionAdicionalOrContraprestada($event)">
+        <nz-option nzLabel="Adicional" nzValue="adicional"></nz-option>
+        <nz-option nzLabel="Contraprestada" nzValue="contraprestada"></nz-option>
+        <nz-option nzLabel="Ambos" nzValue="ambos"></nz-option>
+      </nz-select>
+    </div>
+  </ng-container>
+</div>

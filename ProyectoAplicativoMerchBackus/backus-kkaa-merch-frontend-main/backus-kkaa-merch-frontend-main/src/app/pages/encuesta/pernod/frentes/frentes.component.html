@@ -1,0 +1,114 @@
+<!-- ya no se usa -->
+<!-- <div>
+  <nz-card [nzBodyStyle]="{'padding': '0'}" *ngIf="!savedSuccessfully">
+    <div class="card-header">
+      <nz-typography>
+        Encuesta - <strong nzType="secondary" class="breadcrumb-text">FRENTES</strong>
+      </nz-typography>
+    </div>
+    <div class="card-content">
+      <div class="container-checked">
+        <div style="margin-bottom: 12px;">
+          <div class="frentes-totales">
+            <div>
+              <label style="color:rgb(255, 255, 255);">FRENTES TOTALES</label>
+            </div>
+            <div>
+              <input readonly nz-input placeholder="" type="number" [(ngModel)]="data.maxTotal"
+                (keypress)="validateNumberInputInteger($event)" (input)="restrictMaxLength($event); calculateTotal()"/>
+            </div>
+          </div>
+        </div>
+        <div class="container-group-collapse-panel">
+          <div class="container-collapse-panel">
+            <nz-collapse nzGhost>
+              <nz-collapse-panel [nzHeader]="'FRENTES POR MARCA - Competencia'" nzExpandedIcon="double-right">
+                <div nz-form-item class="rounded-box black-background">
+                  <nz-list>
+                    <nz-list-item *ngFor="let item of data.listadoOptionsCompetenciaPE">
+                      {{ item.title }}
+                      <input nz-input placeholder="" [ngModel]="item.value === 0 ? '' : item.value" type="number"
+                        (keypress)="validateNumberInputInteger($event)"
+                        (input)="restrictMaxLength($event); updateItemValue($event, item, 'FRENTES POR MARCA - Competencia')"
+                        (click)="item.clicked = true" />
+                    </nz-list-item>
+                  </nz-list>
+                </div>
+              </nz-collapse-panel>
+            </nz-collapse>
+          </div>
+          <div class="container-collapse-panel">
+            <nz-collapse nzGhost>
+              <nz-collapse-panel [nzHeader]="'FRENTES POR MARCA - PERNOD'" nzExpandedIcon="double-right">
+                <div nz-form-item class="rounded-box black-background">
+                  <nz-list>
+                    <nz-list-item *ngFor="let item of data.listadoOptionsPE">
+                      {{ item.title }}
+                      <input nz-input placeholder="" [ngModel]="item.value === 0 ? '' : item.value" type="number"
+                        (keypress)="validateNumberInputInteger($event)"
+                        (input)="restrictMaxLength($event); updateItemValue($event, item, 'FRENTES POR MARCA - PERNOD')"
+                        (click)="item.clicked = true" />
+                    </nz-list-item>
+                  </nz-list>
+                </div>
+              </nz-collapse-panel>
+            </nz-collapse>
+          </div>
+        </div>
+        <div>
+          <app-photo-upload 
+              [table]="table" 
+              [nameContainer]="nameContainer" 
+              [maxImages]="5"
+              [codeParent]="codeParent"
+              [maxWidth]="'calc(100vw - 155px)'"
+              (filesChanged)="onFilesChanged($event)">
+          </app-photo-upload>
+        </div>
+      </div>
+    </div>
+  </nz-card>
+  <nz-card [nzBodyStyle]="{'padding': '0'}" *ngIf="savedSuccessfully">
+    <div class="card-header card-header-success-create-competencia">
+      <nz-typography>
+        LISTO:
+      </nz-typography>
+    </div>
+    <div class="card-content">
+      <div class="card-content-description-success-create-competencia">
+        <nz-typography>
+          Formulario subido correctamente en Módulo FRENTES.
+          Pulse para volver para ir al menú
+        </nz-typography>
+        <div *ngIf="productosModificados.length > 0">
+          <ul>
+            <li> <strong>Se añadieron los siguientes productos:</strong>
+              <ul>
+                <li *ngFor="let item of productosModificados">
+                  ({{ item.panelTitle }}) - {{ item.title }}
+                </li>
+              </ul>
+            </li>
+            <li> <strong>Se Agregó Imagen</strong></li>
+          </ul>
+        </div>
+      </div>
+      <div class="button-volver">
+        <button nz-button nzType="primary" (click)="volverMenu()">Volver</button>
+      </div>
+    </div>
+  </nz-card>
+</div>
+<div class="container-footer" *ngIf="!savedSuccessfully">
+  <button nz-button nzType="primary" (click)="guardarOptions()" [disabled]="!isFormValid()">Guardar</button>
+</div>
+
+<div style="margin-top: 10px;">
+  <span [class.error-text]="data.sumTotalOptions > data.maxTotal" *ngIf="data.sumTotalOptions > data.maxTotal">
+    La suma de frentes por marca no puede exceder el total de frentes totales.
+  </span>
+</div>
+
+<app-spinner-loading [loading]="loading"></app-spinner-loading> -->
+
+<!-- ya no se usa -->

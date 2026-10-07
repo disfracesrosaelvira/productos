@@ -1,0 +1,83 @@
+<div class="content-option-recogo">
+  <nz-card [nzBodyStyle]="{'padding': '0'}" *ngIf="!guardadoExitoso">
+    <div class="card-content">
+      <div>
+        <div><nz-typography>Marca: </nz-typography></div>
+        <div>
+          <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione una marca" class="custom-nz-select"
+            [(ngModel)]="selectedMarcaMuebles" (ngModelChange)="selectMarca($event)">
+            <nz-option *ngFor="let option of dataMarcaMuebles" [nzValue]="option.value"
+              [nzLabel]="option.label"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+      <div>
+        <div>
+          <div><nz-typography>Tipo Mueble: </nz-typography></div>
+          <div>
+            <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione un tipo de mueble" class="custom-nz-select"
+              [(ngModel)]="selectedTipoMueble" (ngModelChange)="selectTipoMueble($event)">
+              <nz-option *ngFor="let option of dataTipoMueble" [nzValue]="option.value"
+                [nzLabel]="option.label"></nz-option>
+            </nz-select>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div>
+          <div><nz-typography>Motivo Recojo: </nz-typography></div>
+          <div>
+            <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Seleccione Motivo de Recojo" class="custom-nz-select"
+              [(ngModel)]="selectedMotivoRecojo" (ngModelChange)="selectMotivoRecojo($event)">
+              <nz-option *ngFor="let option of dataMotivoRecojo" [nzValue]="option.value"
+                [nzLabel]="option.label"></nz-option>
+            </nz-select>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 4px;">
+        <app-photo-upload 
+          [table]="table" 
+          [nameContainer]="nameContainer" 
+          [maxImages]="5"
+          [codeParent]="codeParent"
+          [maxWidth]="'calc(100vw - 165px)'"
+          (filesChanged)="onFilesChanged($event)">
+        </app-photo-upload>
+      </div>
+    </div>
+  </nz-card>
+  <nz-card [nzBodyStyle]="{'padding': '0'}" *ngIf="guardadoExitoso">
+    <div class="card-header card-header-success-create-competencia">
+      <nz-typography>
+        Incidencia Creada:
+      </nz-typography>
+    </div>
+    <div class="card-content">
+      <div class="card-content-description-success-create-competencia">
+        <nz-typography>
+          Formulario subido correctamente en Mueble - Recojo
+          Pulse para volver para ir al menu
+        </nz-typography>
+        <div>
+          <ul>
+            <li> Se Agregó el Tipo de Mueble: <strong>{{selectedTipoMueble}}</strong></li>
+            <li> Se Agregó la Marca: <strong>{{selectedMarcaMuebles}}</strong></li>
+            <li> Se Agregó el Motivo: <strong>{{selectedMotivoRecojo}}</strong></li>
+            <li> <strong>Se Agregó {{uploadFiles.length == 1 ? 'Una Imagen' : (uploadFiles.length + ' Imagenes')}}</strong></li>
+          </ul>
+        </div>
+      </div>
+      <div class="button-volver">
+        <button nz-button nzType="primary" (click)="volverMenu()">Volver</button>
+      </div>
+    </div>
+  </nz-card>
+</div>
+
+<div class="container-footer" *ngIf="!guardadoExitoso">
+  <button nz-button nzType="primary" nzDanger (click)="volverMenu()">Cancelar</button>
+  <button nz-button nzType="primary" (click)="saveIncidenciasMuebleRecojo()" [disabled]="!isFormValidFlag">Guardar</button>
+</div>
+
+<app-spinner-loading [loading]="loading"></app-spinner-loading>
