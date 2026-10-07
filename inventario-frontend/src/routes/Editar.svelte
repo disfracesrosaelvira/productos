@@ -56,6 +56,10 @@
   async function guardar(evento) {
     evento.preventDefault()
     error = ''
+    if (esNuevo && pendientes.length === 0) {
+      error = 'Agrega al menos 1 foto (de 1 a 3).'
+      return
+    }
     guardando = true
     try {
       const body = {
@@ -186,7 +190,7 @@
       <div>
         <h2 class="font-medium">Fotos</h2>
         <p class="text-xs text-slate-500">
-          Toma una foto con la cámara o súbela desde la galería. Se comprimen automáticamente antes de subir.
+          Toma fotos con la cámara o súbelas desde la galería (entre 1 y 3). Se comprimen automáticamente antes de subir.
           {#if esNuevo}Se guardarán al crear el producto.{/if}
         </p>
       </div>

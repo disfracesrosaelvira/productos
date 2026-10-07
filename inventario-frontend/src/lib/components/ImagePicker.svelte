@@ -2,7 +2,7 @@
   import imageCompression from 'browser-image-compression'
 
   // archivos: array bindeable de { file, url, bytes, original }
-  let { archivos = $bindable([]), maxFotos = 12, deshabilitado = false } = $props()
+  let { archivos = $bindable([]), maxFotos = 3, deshabilitado = false } = $props()
 
   let inputCamara
   let inputGaleria
@@ -17,17 +17,28 @@
     initialQuality: 0.82,
   }
 
+  const lleno = $derived(archivos.length >= maxFotos)
+
   async function procesar(evento) {
     const lista = Array.from(evento.target.files ?? [])
     evento.target.value = ''
     if (lista.length === 0) return
 
-    aviso = ''
+    const disponibles = maxFotos - archivos.length
+    if (disponibles <= 0) {
+      aviso = `Ya alcanzaste el máximo de ${maxFotos} fotos.`
+      return
+    }
+    const seleccion = lista.slice(0, disponibles)
+    aviso =
+      lista.length > disponibles
+        ? `Solo se agregaron ${disponibles} foto(s); el máximo es ${maxFotos}.`
+        : ''
+
     comprimiendo = true
     try {
-      for (const file of lista) {
+      for (const file of seleccion) {
         if (!file.type.startsWith('image/')) continue
-        if (archivos.length >= maxFotos) break
         const comprimido = await imageCompression(file, opciones)
         archivos = [
           ...archivos,
@@ -61,20 +72,21 @@
     <button
       type="button"
       class="rounded bg-slate-700 text-white px-3 py-2 text-sm hover:bg-slate-600 disabled:opacity-50"
-      disabled={deshabilitado || comprimiendo}
+      disabled={deshabilitado || comprimiendo || lleno}
       onclick={() => inputCamara.click()}>
       📷 Tomar foto
     </button>
     <button
       type="button"
       class="rounded border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50 disabled:opacity-50"
-      disabled={deshabilitado || comprimiendo}
+      disabled={deshabilitado || comprimiendo || lleno}
       onclick={() => inputGaleria.click()}>
       🖼️ Subir desde galería
     </button>
     {#if comprimiendo}
       <span class="text-sm text-slate-500">Comprimiendo…</span>
     {/if}
+    <span class="text-xs text-slate-500 sm:ml-auto">{archivos.length}/{maxFotos} fotos</span>
   </div>
 
   <!-- capture="environment" abre la cámara trasera en el móvil -->
@@ -114,7 +126,7 @@
       {/each}
     </div>
     <p class="text-xs text-slate-500">
-      {archivos.length} foto(s) comprimida(s) y lista(s) para subir.
+      {archivos.length} de {maxFotos} foto(s) comprimida(s) y lista(s) para subir.
     </p>
   {/if}
 </div>
