@@ -6,6 +6,9 @@
 # Fotos originales (ya estan cargadas en Supabase Storage)
 FotosDisfraces/
 
+# Proyecto ajeno (no forma parte del inventario)
+ProyectoAplicativoMerchBackus/
+
 # Word / temporales
 ~lock.*
 ~$*.docx
