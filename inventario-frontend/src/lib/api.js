@@ -60,7 +60,17 @@ export const api = {
   crearVariante: (body) => request('/variants', { method: 'POST', body: JSON.stringify(body) }),
   actualizarVariante: (id, body) =>
     request(`/variants/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  ajustarStock: (id, delta) =>
+    request(`/variants/${id}/stock`, { method: 'PATCH', body: JSON.stringify({ delta }) }),
   eliminarVariante: (id) => request(`/variants/${id}`, { method: 'DELETE' }),
+
+  // --- movimientos de stock ---
+  listarMovimientos: (params = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== '' && v != null),
+    ).toString()
+    return request(`/movements${qs ? `?${qs}` : ''}`)
+  },
 
   // --- ventas ---
   crearVenta: (body) => request('/sales', { method: 'POST', body: JSON.stringify(body) }),
@@ -70,6 +80,25 @@ export const api = {
     ).toString()
     return request(`/sales${qs ? `?${qs}` : ''}`)
   },
+
+  // --- usuarios ---
+  listarUsuarios: (params = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== '' && v != null),
+    ).toString()
+    return request(`/usuarios${qs ? `?${qs}` : ''}`)
+  },
+  crearUsuario: (body) => request('/usuarios', { method: 'POST', body: JSON.stringify(body) }),
+  actualizarUsuario: (id, body) =>
+    request(`/usuarios/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  eliminarUsuario: (id) => request(`/usuarios/${id}`, { method: 'DELETE' }),
+
+  // --- roles ---
+  listarRoles: () => request('/roles'),
+  crearRol: (body) => request('/roles', { method: 'POST', body: JSON.stringify(body) }),
+  actualizarRol: (id, body) =>
+    request(`/roles/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  eliminarRol: (id) => request(`/roles/${id}`, { method: 'DELETE' }),
 
   // --- reportes ---
   bajoStock: (threshold = 3) => request(`/reports/low-stock?threshold=${threshold}`),

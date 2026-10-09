@@ -115,6 +115,20 @@ create table if not exists public.sale_items (
     created_at timestamptz not null default now()
 );
 
+-- 1.10 STOCK_MOVEMENTS (historial de entradas/salidas de stock)
+--      cantidad_movimiento es con signo: positivo = ingresa, negativo = sale.
+create table if not exists public.stock_movements (
+    id                  uuid primary key default gen_random_uuid(),
+    variant_id          uuid not null references public.variants (id) on delete cascade,
+    tipo_movimiento     text not null
+                        check (tipo_movimiento in ('Entrada', 'Salida', 'Venta', 'Devolucion', 'Ajuste')),
+    cantidad_movimiento integer not null,
+    fecha_movimiento    timestamptz not null default now(),
+    referencia          text,                 -- sale id, motivo, etc.
+    user_id             uuid references public.profiles (id) on delete set null,
+    created_at          timestamptz not null default now()
+);
+
 
 -- =====================================================================
 -- 2. INDICES
@@ -128,6 +142,8 @@ create index if not exists idx_sales_user          on public.sales (user_id);
 create index if not exists idx_sales_date          on public.sales (sale_date);
 create index if not exists idx_sale_items_sale     on public.sale_items (sale_id);
 create index if not exists idx_sale_items_variant  on public.sale_items (variant_id);
+create index if not exists idx_movements_variant   on public.stock_movements (variant_id);
+create index if not exists idx_movements_fecha     on public.stock_movements (fecha_movimiento desc);
 
 
 -- =====================================================================
@@ -273,8 +289,50 @@ create trigger trg_recalcular_total
     after insert or update or delete on public.sale_items
     for each row execute function public.recalcular_total_venta();
 
+-- 3.6 Registrar movimiento de Venta (cantidad negativa) al insertar un sale_item
+create or replace function public.registrar_movimiento_venta()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    insert into public.stock_movements
+        (variant_id, tipo_movimiento, cantidad_movimiento, referencia)
+    values
+        (new.variant_id, 'Venta', -new.quantity, 'sale:' || new.sale_id::text);
+    return new;
+end;
+$$;
 
--- 3.6 Helper de rol admin (SECURITY DEFINER evita recursion en RLS)
+drop trigger if exists trg_movimiento_venta on public.sale_items;
+create trigger trg_movimiento_venta
+    after insert on public.sale_items
+    for each row execute function public.registrar_movimiento_venta();
+
+-- 3.7 Registrar movimiento de Devolucion al eliminar un sale_item
+create or replace function public.registrar_movimiento_devolucion()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    insert into public.stock_movements
+        (variant_id, tipo_movimiento, cantidad_movimiento, referencia)
+    values
+        (old.variant_id, 'Devolucion', old.quantity, 'sale:' || old.sale_id::text);
+    return old;
+end;
+$$;
+
+drop trigger if exists trg_movimiento_devolucion on public.sale_items;
+create trigger trg_movimiento_devolucion
+    after delete on public.sale_items
+    for each row execute function public.registrar_movimiento_devolucion();
+
+
+-- 3.8 Helper de rol admin (SECURITY DEFINER evita recursion en RLS)
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -397,6 +455,15 @@ create policy "items auth update"
 drop policy if exists "items auth delete" on public.sale_items;
 create policy "items auth delete"
     on public.sale_items for delete to authenticated using (true);
+
+-- 4.5 Movimientos de stock: lectura publica, escritura autenticada
+drop policy if exists "lectura publica stock_movements" on public.stock_movements;
+create policy "lectura publica stock_movements"
+    on public.stock_movements for select to anon, authenticated using (true);
+
+drop policy if exists "escritura auth stock_movements" on public.stock_movements;
+create policy "escritura auth stock_movements"
+    on public.stock_movements for all to authenticated using (true) with check (true);
 
 
 -- =====================================================================

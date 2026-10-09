@@ -9,6 +9,9 @@ import productRoutes from './routes/products.js';
 import variantRoutes from './routes/variants.js';
 import saleRoutes from './routes/sales.js';
 import reportRoutes from './routes/reports.js';
+import movementRoutes from './routes/movements.js';
+import usuarioRoutes from './routes/usuarios.js';
+import rolRoutes from './routes/roles.js';
 
 const fastify = Fastify({
   logger:
@@ -40,6 +43,9 @@ await fastify.register(productRoutes, { prefix: '/products' });
 await fastify.register(variantRoutes, { prefix: '/variants' });
 await fastify.register(saleRoutes, { prefix: '/sales' });
 await fastify.register(reportRoutes, { prefix: '/reports' });
+await fastify.register(movementRoutes, { prefix: '/movements' });
+await fastify.register(usuarioRoutes, { prefix: '/usuarios' });
+await fastify.register(rolRoutes, { prefix: '/roles' });
 
 try {
   await fastify.listen({ port: env.port, host: env.host });

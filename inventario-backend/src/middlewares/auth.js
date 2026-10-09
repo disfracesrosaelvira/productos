@@ -11,19 +11,24 @@ async function autenticar(request) {
 
   const { data: perfil } = await supabaseAdmin
     .from('profiles')
-    .select('role')
+    .select('role, estado')
     .eq('id', data.user.id)
     .maybeSingle();
+
+  if (perfil && perfil.estado === 0) {
+    throw new AppError('Usuario inactivo', 403);
+  }
 
   request.user = {
     id: data.user.id,
     email: data.user.email,
     role: perfil?.role ?? 'vendedor',
+    estado: perfil?.estado ?? 1,
   };
   request.token = token;
 }
 
-// preHandler: exige usuario autenticado
+// preHandler: exige usuario autenticado y activo
 export async function requireAuth(request) {
   await autenticar(request);
 }

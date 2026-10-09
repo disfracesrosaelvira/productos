@@ -13,6 +13,16 @@
     { valor: 'mujer', texto: 'Mujer' },
     { valor: 'unisex', texto: 'Unisex' },
   ]
+  const TELAS = [
+    { valor: 'polinan', texto: 'Polinan' },
+    { valor: 'poliestress', texto: 'Poliestress' },
+    { valor: 'poliestress forrado', texto: 'Poliestress forrado' },
+    { valor: 'polar', texto: 'Polar' },
+    { valor: 'alicrado', texto: 'Alicrado' },
+    { valor: 'raso', texto: 'Raso' },
+    { valor: 'latex', texto: 'Látex' },
+    { valor: 'sermat', texto: 'Sermat' },
+  ]
 
   let form = $state({ name: '', price: '', category_id: '', active: true })
   let talla = $state('')
@@ -20,12 +30,15 @@
   let cantidad = $state(1)
   let conComentario = $state(false)
   let comentario = $state('')
-  let conTela = $state(false)
   let tela = $state('')
 
   let categorias = $state([])
   let fotosExistentes = $state([])
   let pendientes = $state([])
+  let variantes = $state([])
+  let editandoId = $state(null)
+  let stockEdit = $state(0)
+  let guardandoStock = $state(false)
   let guardando = $state(false)
   let error = $state('')
 
@@ -43,11 +56,44 @@
         conComentario = !!p.description
         comentario = p.description ?? ''
         fotosExistentes = p.product_images ?? []
+        variantes = await api.listarVariantes({ product_id: id })
       } catch (e) {
         error = e.message
       }
     }
   })
+
+  async function cargarVariantes() {
+    variantes = await api.listarVariantes({ product_id: id })
+  }
+
+  function editarStock(v) {
+    editandoId = v.id
+    stockEdit = v.stock_quantity
+  }
+
+  function cancelarEdicion() {
+    editandoId = null
+  }
+
+  async function guardarStock(v) {
+    const delta = Number(stockEdit) - v.stock_quantity
+    if (!Number.isInteger(delta) || delta === 0) {
+      editandoId = null
+      return
+    }
+    guardandoStock = true
+    error = ''
+    try {
+      await api.ajustarStock(v.id, delta)
+      await cargarVariantes()
+      editandoId = null
+    } catch (e) {
+      error = e.message
+    } finally {
+      guardandoStock = false
+    }
+  }
 
   onDestroy(() => {
     for (const f of pendientes) URL.revokeObjectURL(f.url)
@@ -71,12 +117,12 @@
       }
       const prod = esNuevo ? await api.crearProducto(body) : await api.actualizarProducto(id, body)
 
-      if (talla || genero || (conTela && tela)) {
+      if (talla || genero || tela) {
         await api.crearVariante({
           product_id: prod.id,
           size: talla || null,
           gender: genero || null,
-          fabric_quality: conTela ? tela || null : null,
+          fabric_quality: tela || null,
           stock_quantity: Number(cantidad) || 0,
         })
       }
@@ -129,8 +175,64 @@
       </label>
     </div>
 
+    {#if !esNuevo}
+      <fieldset class="border border-slate-200 rounded-lg p-3 space-y-3">
+        <legend class="text-xs font-medium text-slate-500 px-1">Tallas / variantes (editar stock)</legend>
+        {#if variantes.length === 0}
+          <p class="text-sm text-slate-500">Sin tallas registradas.</p>
+        {:else}
+          <div class="overflow-hidden rounded-lg border border-slate-200">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 text-left text-slate-500">
+                <tr>
+                  <th class="px-3 py-2">SKU</th>
+                  <th class="px-3 py-2">Talla</th>
+                  <th class="px-3 py-2">Género</th>
+                  <th class="px-3 py-2">Tela</th>
+                  <th class="px-3 py-2 text-right">Stock</th>
+                  <th class="px-3 py-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each variantes as v (v.id)}
+                  <tr class="border-t border-slate-100">
+                    <td class="px-3 py-2 font-mono text-xs">{v.sku}</td>
+                    <td class="px-3 py-2">{v.size ?? '—'}</td>
+                    <td class="px-3 py-2">{v.gender ?? '—'}</td>
+                    <td class="px-3 py-2">{v.fabric_quality ?? '—'}</td>
+                    <td class="px-3 py-2 text-right">
+                      {#if editandoId === v.id}
+                        <input type="number" min="0" bind:value={stockEdit}
+                          class="w-20 rounded border border-slate-300 px-2 py-1 text-right" />
+                      {:else}
+                        <span class={v.stock_quantity > 0 ? '' : 'text-red-500'}>{v.stock_quantity}</span>
+                      {/if}
+                    </td>
+                    <td class="px-3 py-2 text-right whitespace-nowrap">
+                      {#if editandoId === v.id}
+                        <button type="button" disabled={guardandoStock}
+                          class="text-emerald-600 hover:underline"
+                          onclick={() => guardarStock(v)}>Guardar</button>
+                        <button type="button" disabled={guardandoStock}
+                          class="ml-2 text-slate-500 hover:underline"
+                          onclick={cancelarEdicion}>Cancelar</button>
+                      {:else}
+                        <button type="button" title="Editar stock" aria-label="Editar stock"
+                          class="text-slate-600 hover:text-slate-900"
+                          onclick={() => editarStock(v)}>✏️</button>
+                      {/if}
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        {/if}
+      </fieldset>
+    {/if}
+
     <fieldset class="border border-slate-200 rounded-lg p-3 space-y-3">
-      <legend class="text-xs font-medium text-slate-500 px-1">Variante (talla / género / stock)</legend>
+      <legend class="text-xs font-medium text-slate-500 px-1">Agregar nueva variante (talla / género / stock)</legend>
       <div class="grid grid-cols-3 gap-4">
         <label class="block">
           <span class="text-sm font-medium">Talla</span>
@@ -159,16 +261,16 @@
         </label>
       </div>
 
-      <div class="space-y-2">
-        <label class="flex items-center gap-2 text-sm">
-          <input type="checkbox" bind:checked={conTela} />
-          Comentar calidad de la tela (opcional)
-        </label>
-        {#if conTela}
-          <input bind:value={tela} placeholder="Ej: polinan, raso, bordado…"
-            class="w-full rounded border border-slate-300 px-3 py-2" />
-        {/if}
-      </div>
+      <label class="block">
+        <span class="text-sm font-medium">Tela (opcional)</span>
+        <select bind:value={tela}
+          class="mt-1 w-full rounded border border-slate-300 px-3 py-2">
+          <option value="">Sin especificar</option>
+          {#each TELAS as t}
+            <option value={t.valor}>{t.texto}</option>
+          {/each}
+        </select>
+      </label>
     </fieldset>
 
     <div class="space-y-2">

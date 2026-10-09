@@ -14,6 +14,17 @@
   let categoria = $state('')
   let genero = $state('')
 
+  let mostrarSugerencias = $state(false)
+  let indiceActivo = $state(-1)
+
+  const sugerencias = $derived(
+    q.trim() === ''
+      ? []
+      : productos
+          .filter((p) => p.name.toLowerCase().includes(q.trim().toLowerCase()))
+          .slice(0, 8),
+  )
+
   const totalStock = (p) => (p.variants ?? []).reduce((s, v) => s + (v.stock_quantity || 0), 0)
 
   async function cargar() {
@@ -31,6 +42,7 @@
 
   function buscar(evento) {
     evento.preventDefault()
+    mostrarSugerencias = false
     cargar()
   }
 
@@ -38,7 +50,38 @@
     q = ''
     categoria = ''
     genero = ''
+    mostrarSugerencias = false
     cargar()
+  }
+
+  function seleccionarSugerencia(p) {
+    mostrarSugerencias = false
+    indiceActivo = -1
+    navegar(`/producto/${p.id}`)
+  }
+
+  function cerrarSugerencias() {
+    setTimeout(() => {
+      mostrarSugerencias = false
+      indiceActivo = -1
+    }, 150)
+  }
+
+  function teclaBusqueda(evento) {
+    if (!mostrarSugerencias || sugerencias.length === 0) return
+    if (evento.key === 'ArrowDown') {
+      evento.preventDefault()
+      indiceActivo = (indiceActivo + 1) % sugerencias.length
+    } else if (evento.key === 'ArrowUp') {
+      evento.preventDefault()
+      indiceActivo = (indiceActivo - 1 + sugerencias.length) % sugerencias.length
+    } else if (evento.key === 'Enter' && indiceActivo >= 0) {
+      evento.preventDefault()
+      seleccionarSugerencia(sugerencias[indiceActivo])
+    } else if (evento.key === 'Escape') {
+      mostrarSugerencias = false
+      indiceActivo = -1
+    }
   }
 
   onMount(async () => {
@@ -68,10 +111,43 @@
   </div>
 
   <form class="bg-white rounded-lg shadow p-3 flex gap-2 flex-wrap items-center" onsubmit={buscar}>
-    <input
-      bind:value={q}
-      placeholder="Buscar por nombre…"
-      class="flex-1 min-w-[12rem] rounded border border-slate-300 px-3 py-2 text-sm" />
+    <div class="relative flex-1 min-w-[12rem]">
+      <input
+        bind:value={q}
+        oninput={() => {
+          indiceActivo = -1
+          mostrarSugerencias = true
+        }}
+        onfocus={() => (mostrarSugerencias = true)}
+        onblur={cerrarSugerencias}
+        onkeydown={teclaBusqueda}
+        placeholder="Buscar por nombre…"
+        autocomplete="off"
+        class="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+      {#if mostrarSugerencias && sugerencias.length > 0}
+        <ul
+          class="absolute z-20 mt-1 w-full max-h-64 overflow-auto rounded border border-slate-200 bg-white shadow-lg">
+          {#each sugerencias as p, i (p.id)}
+            <li>
+              <button
+                type="button"
+                class="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 {i === indiceActivo
+                  ? 'bg-slate-100'
+                  : ''}"
+                onmousedown={(evento) => {
+                  evento.preventDefault()
+                  seleccionarSugerencia(p)
+                }}>
+                <span class="font-medium">{p.name}</span>
+                {#if p.categories}
+                  <span class="text-xs text-slate-500"> · {p.categories.name}</span>
+                {/if}
+              </button>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+    </div>
     <select bind:value={categoria} onchange={cargar}
       class="rounded border border-slate-300 px-2 py-2 text-sm">
       <option value="">Todas las categorías</option>

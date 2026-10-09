@@ -21,18 +21,18 @@ export default async function variantRoutes(fastify) {
 
   fastify.post('/', { preHandler: requireAuth }, async (request, reply) => {
     const datos = validate(crearVariante, request.body);
-    const variante = await service.createVariant(datos);
+    const variante = await service.createVariant(datos, request.user.id);
     return reply.code(201).send(variante);
   });
 
   fastify.put('/:id', { preHandler: requireAuth }, async (request) => {
     const datos = validate(actualizarVariante, request.body);
-    return service.updateVariant(request.params.id, datos);
+    return service.updateVariant(request.params.id, datos, request.user.id);
   });
 
   fastify.patch('/:id/stock', { preHandler: requireAuth }, async (request) => {
     const { delta } = validate(ajusteStock, request.body);
-    return service.adjustStock(request.params.id, delta);
+    return service.adjustStock(request.params.id, delta, request.user.id);
   });
 
   fastify.delete('/:id', { preHandler: requireAuth }, async (request) => {

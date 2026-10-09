@@ -1,6 +1,7 @@
 import { AppError, noEncontrado } from '../lib/errors.js';
 import { supabaseAdmin } from '../lib/supabase.js';
 import { slugify } from '../lib/utils.js';
+import { registrarMovimiento } from './movementService.js';
 
 const SELECT = `
   id, product_id, size, gender, fabric_quality, sku, stock_quantity, created_at, updated_at,
@@ -55,7 +56,7 @@ export async function getVariant(id) {
   return data;
 }
 
-export async function createVariant(input) {
+export async function createVariant(input, userId = null) {
   const sku = input.sku || (await generarSku(input.product_id, input.size, input.gender));
   const { data, error } = await supabaseAdmin
     .from('variants')
@@ -70,17 +71,39 @@ export async function createVariant(input) {
     .select('id')
     .single();
   if (error) throw new AppError(error.message, 500);
+
+  const stockInicial = input.stock_quantity ?? 0;
+  if (stockInicial > 0) {
+    await registrarMovimiento({
+      variant_id: data.id,
+      tipo_movimiento: 'Entrada',
+      cantidad_movimiento: stockInicial,
+      referencia: 'stock inicial',
+      user_id: userId,
+    });
+  }
   return getVariant(data.id);
 }
 
-export async function updateVariant(id, input) {
-  await getVariant(id);
+export async function updateVariant(id, input, userId = null) {
+  const actual = await getVariant(id);
   const { error } = await supabaseAdmin.from('variants').update(input).eq('id', id);
   if (error) throw new AppError(error.message, 500);
+
+  if (input.stock_quantity !== undefined && input.stock_quantity !== actual.stock_quantity) {
+    const delta = input.stock_quantity - actual.stock_quantity;
+    await registrarMovimiento({
+      variant_id: id,
+      tipo_movimiento: delta > 0 ? 'Entrada' : 'Salida',
+      cantidad_movimiento: delta,
+      referencia: 'edicion de stock',
+      user_id: userId,
+    });
+  }
   return getVariant(id);
 }
 
-export async function adjustStock(id, delta) {
+export async function adjustStock(id, delta, userId = null) {
   const { data: actual, error } = await supabaseAdmin
     .from('variants')
     .select('stock_quantity')
@@ -102,6 +125,14 @@ export async function adjustStock(id, delta) {
     .update({ stock_quantity: nuevo })
     .eq('id', id);
   if (errUpdate) throw new AppError(errUpdate.message, 500);
+
+  await registrarMovimiento({
+    variant_id: id,
+    tipo_movimiento: delta > 0 ? 'Entrada' : 'Salida',
+    cantidad_movimiento: delta,
+    referencia: 'ajuste manual',
+    user_id: userId,
+  });
   return getVariant(id);
 }
 

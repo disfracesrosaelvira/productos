@@ -3,7 +3,7 @@
   import { api } from '../lib/api.js'
   import { navegar } from '../lib/router.svelte.js'
   import { supabase } from '../lib/supabase.js'
-  import { soles } from '../lib/format.js'
+  import { soles, fecha } from '../lib/format.js'
   import Lightbox from '../lib/components/Lightbox.svelte'
 
   let { id } = $props()
@@ -13,6 +13,13 @@
   let zoomSrc = $state(null)
   let cargando = $state(true)
   let error = $state('')
+  let movimientos = $state([])
+
+  const variantes = $derived(producto?.variants ?? [])
+  const generos = $derived([...new Set(variantes.map((v) => v.gender).filter(Boolean))])
+  const telas = $derived([...new Set(variantes.map((v) => v.fabric_quality).filter(Boolean))])
+  const generoUniforme = $derived(generos.length === 1)
+  const telaUniforme = $derived(telas.length === 1)
 
   async function cargar() {
     try {
@@ -20,6 +27,7 @@
       const imgs = producto.product_images ?? []
       const prim = imgs.find((i) => i.is_primary) ?? imgs[0]
       principal = prim?.image_url ?? producto.image_url ?? ''
+      movimientos = await api.listarMovimientos({ product_id: id }).catch(() => [])
     } catch (e) {
       error = e.message
     } finally {
@@ -88,6 +96,11 @@
       <div class="space-y-4">
         <div>
           <h1 class="text-2xl font-semibold">{producto.name}</h1>
+          {#if generos.length || telas.length}
+            <p class="text-sm text-slate-500 mt-1">
+              {#if generos.length}{generos.join(' / ')}{/if}{#if generos.length && telas.length} · {/if}{#if telas.length}tela {telas.join(' / ')}{/if}
+            </p>
+          {/if}
           {#if producto.categories}
             <span class="inline-block text-xs bg-slate-100 text-slate-600 rounded px-2 py-0.5 mt-1">
               {producto.categories.name}
@@ -107,18 +120,18 @@
                 <tr>
                   <th class="px-3 py-2">SKU</th>
                   <th class="px-3 py-2">Talla</th>
-                  <th class="px-3 py-2">Género</th>
-                  <th class="px-3 py-2">Tela</th>
+                  {#if !generoUniforme}<th class="px-3 py-2">Género</th>{/if}
+                  {#if !telaUniforme}<th class="px-3 py-2">Tela</th>{/if}
                   <th class="px-3 py-2 text-right">Stock</th>
                 </tr>
               </thead>
               <tbody>
-                {#each producto.variants ?? [] as v (v.id)}
+                {#each variantes as v (v.id)}
                   <tr class="border-t border-slate-100">
                     <td class="px-3 py-2 font-mono text-xs">{v.sku}</td>
                     <td class="px-3 py-2">{v.size ?? '—'}</td>
-                    <td class="px-3 py-2">{v.gender ?? '—'}</td>
-                    <td class="px-3 py-2">{v.fabric_quality ?? '—'}</td>
+                    {#if !generoUniforme}<td class="px-3 py-2">{v.gender ?? '—'}</td>{/if}
+                    {#if !telaUniforme}<td class="px-3 py-2">{v.fabric_quality ?? '—'}</td>{/if}
                     <td class="px-3 py-2 text-right {v.stock_quantity > 0 ? '' : 'text-red-500'}">
                       {v.stock_quantity}
                     </td>
@@ -127,6 +140,38 @@
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div>
+          <h2 class="font-medium mb-2">Movimientos de stock</h2>
+          {#if movimientos.length === 0}
+            <p class="text-sm text-slate-500">Sin movimientos registrados.</p>
+          {:else}
+            <div class="overflow-hidden rounded-lg border border-slate-200">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-left text-slate-500">
+                  <tr>
+                    <th class="px-3 py-2">Variante</th>
+                    <th class="px-3 py-2">Tipo movimiento</th>
+                    <th class="px-3 py-2 text-right">Cantidad</th>
+                    <th class="px-3 py-2">Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {#each movimientos as m (m.id)}
+                    <tr class="border-t border-slate-100">
+                      <td class="px-3 py-2">{m.variants?.sku ?? '—'} · {m.variants?.size ?? '—'}</td>
+                      <td class="px-3 py-2">{m.tipo_movimiento}</td>
+                      <td class="px-3 py-2 text-right {m.cantidad_movimiento < 0 ? 'text-red-500' : 'text-emerald-600'}">
+                        {m.cantidad_movimiento > 0 ? '+' : ''}{m.cantidad_movimiento}
+                      </td>
+                      <td class="px-3 py-2">{fecha(m.fecha_movimiento)}</td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+          {/if}
         </div>
 
         <div class="flex gap-2">
