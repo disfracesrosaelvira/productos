@@ -529,11 +529,14 @@ create policy "disfraces delete auth"
 -- 7. DATOS SEMILLA (categorias base del proyecto)
 -- =====================================================================
 insert into public.categories (name, slug) values
-    ('Superheroes', 'superheroes'),
-    ('Profesiones', 'profesiones'),
-    ('Series',      'series'),
-    ('Peliculas',   'peliculas'),
-    ('Halloween',   'halloween')
+    ('Halloween',                'halloween'),
+    ('Fantasía Series Películas','fantasia-series-peliculas'),
+    ('Profesiones',              'profesiones'),
+    ('Canción Criolla',          'cancion-criolla'),
+    ('Princesas',                'princesas'),
+    ('Animales',                 'animales'),
+    ('Accesorios',               'accesorios'),
+    ('Anime Cosplay',            'anime-cosplay')
 on conflict (slug) do nothing;
 
 
