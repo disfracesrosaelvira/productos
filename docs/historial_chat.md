@@ -61,12 +61,29 @@
 - Frontend: `lib/perfil.svelte.js` carga nombre/rol/permisos; el Nav muestra nombre+rol,
   filtra menús por permisos y muestra el ☰ solo al admin.
 
+### 8. Tallas múltiples con precio y cantidad por talla
+- Nueva columna `variants.price` (migración 04). Si es NULL se usa `products.price`.
+- `Editar.svelte`: en nuevo/editar producto se eligen **varias tallas** (chips) y por cada una
+  se define **Precio** y **Cantidad**; datos compartidos (nombre, categoría, género, tela, fotos)
+  se llenan una sola vez. Botones "Seleccionar todas", "Usar precio base en todas",
+  "Cantidad para todas".
+- La tabla de variantes en edición permite editar **precio y stock** por talla (✏️).
+- `Detalle.svelte`: columna **Precio** por talla. `Ventas.svelte`: usa el precio de la variante.
+
+### 9. Categorías reemplazadas (8)
+- La tabla `categories` quedó con solo 8: **Halloween, Fantasía Series Películas, Profesiones,
+  Canción Criolla, Princesas, Animales, Accesorios, Anime Cosplay**.
+- Los 21 productos se reasignaron a la más cercana (Halloween 5, Profesiones 1,
+  Fantasía Series Películas 15). Ninguno quedó sin categoría.
+- Seed actualizado en `db/supabase_schema.sql`.
+
 ---
 
 ## Migraciones SQL aplicadas (en Supabase → SQL Editor)
 1. `db/migrations/20261008000001_stock_movements.sql`
 2. `db/migrations/20261008000002_usuarios_roles.sql`
 3. `db/migrations/20261008000003_unificar_usuarios_profiles.sql`
+4. `db/migrations/20261008000004_variants_precio.sql`
 
 ---
 
@@ -92,16 +109,22 @@
 ---
 
 ## Estado de git / deploy
-- Último commit: `8bebd7c` — "feat(inventario): movimientos de stock, modulo usuarios/roles
-  y mejoras de catalogo/edicion" (pusheado a `main`).
-- Workflow "Deploy frontend a GitHub Pages": **success** para `8bebd7c`.
-- Backend Railway verificado con las rutas nuevas (`/movements` 200, `/roles` y `/usuarios` 401).
+- Commits pusheados a `main`:
+  - `8bebd7c` movimientos de stock + modulo usuarios/roles + mejoras catalogo/edicion
+  - `bd6960e` historial de sesion
+  - `f6efb7d` tallas multiples con precio y cantidad por talla
+  - `80d925c` seed de categorias a las 8 nuevas
+- **Deploy frontend:** `push` a `main` → GitHub Actions publica en GitHub Pages (solo si cambia
+  `inventario-frontend/**` o el workflow).
+- **Deploy backend (Railway):** NO es automatico. Hay que redesplegar manualmente en Railway
+  (ya se hizo para `f6efb7d`; verificado: `/products` devuelve `price` en variantes).
 
 ---
 
 ## Pendientes / notas al retomar
 - `docs/Documentacion_App_Backus_Merch.docx` y `scripts/generar_documento_merch.py`
   quedaron **sin commitear** (son del proyecto merch, ajeno al inventario).
-- Eliminación de `MockupInteractivoHTML.html` quedó sin confirmar / sin commitear.
 - La tabla `usuario` (version anterior) se dejó intacta como respaldo; ya no se usa.
 - `bcryptjs` quedó como dependencia del backend aunque ya no se usa (Auth maneja el hash).
+- Recordatorio: cambios de backend requieren redeploy manual en Railway; los de frontend
+  se publican solos con push.
