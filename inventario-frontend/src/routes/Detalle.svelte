@@ -122,6 +122,7 @@
                   <th class="px-3 py-2">Talla</th>
                   {#if !generoUniforme}<th class="px-3 py-2">Género</th>{/if}
                   {#if !telaUniforme}<th class="px-3 py-2">Tela</th>{/if}
+                  <th class="px-3 py-2 text-right">Precio</th>
                   <th class="px-3 py-2 text-right">Stock</th>
                 </tr>
               </thead>
@@ -132,6 +133,7 @@
                     <td class="px-3 py-2">{v.size ?? '—'}</td>
                     {#if !generoUniforme}<td class="px-3 py-2">{v.gender ?? '—'}</td>{/if}
                     {#if !telaUniforme}<td class="px-3 py-2">{v.fabric_quality ?? '—'}</td>{/if}
+                    <td class="px-3 py-2 text-right">{soles(v.price ?? producto.price)}</td>
                     <td class="px-3 py-2 text-right {v.stock_quantity > 0 ? '' : 'text-red-500'}">
                       {v.stock_quantity}
                     </td>

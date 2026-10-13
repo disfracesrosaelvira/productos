@@ -4,7 +4,7 @@ import { slugify } from '../lib/utils.js';
 import { registrarMovimiento } from './movementService.js';
 
 const SELECT = `
-  id, product_id, size, gender, fabric_quality, sku, stock_quantity, created_at, updated_at,
+  id, product_id, size, gender, fabric_quality, sku, stock_quantity, price, created_at, updated_at,
   products ( id, name, image_url, price )
 `;
 
@@ -67,6 +67,7 @@ export async function createVariant(input, userId = null) {
       fabric_quality: input.fabric_quality ?? null,
       sku,
       stock_quantity: input.stock_quantity ?? 0,
+      price: input.price ?? null,
     })
     .select('id')
     .single();

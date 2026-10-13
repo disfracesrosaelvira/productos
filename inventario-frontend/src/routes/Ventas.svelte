@@ -36,7 +36,7 @@
         variant_id: v.id,
         etiqueta: `${v.products?.name ?? ''} · ${v.size ?? ''} ${v.gender ?? ''}`.trim(),
         quantity: Number(cantidad),
-        unit_price: Number(v.products?.price ?? 0),
+        unit_price: Number(v.price ?? v.products?.price ?? 0),
         stock: v.stock_quantity,
       },
     ]

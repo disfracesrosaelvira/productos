@@ -8,6 +8,7 @@ export const crearVariante = z.object({
   fabric_quality: z.string().trim().max(100).nullish(),
   sku: z.string().trim().max(100).nullish(),
   stock_quantity: z.number().int().nonnegative().default(0),
+  price: z.number().nonnegative().nullish(),
 });
 
 export const actualizarVariante = crearVariante.omit({ product_id: true }).partial();

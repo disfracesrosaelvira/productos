@@ -7,7 +7,7 @@ import { slugify } from '../lib/utils.js';
 const SELECT = `
   id, name, description, image_url, price, active, category_id, created_at, updated_at,
   categories ( id, name, slug ),
-  variants ( id, size, gender, fabric_quality, sku, stock_quantity ),
+  variants ( id, size, gender, fabric_quality, sku, stock_quantity, price ),
   product_images ( id, image_url, is_primary, position )
 `;
 

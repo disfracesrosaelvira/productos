@@ -67,9 +67,13 @@ create table if not exists public.variants (
     fabric_quality text,                       -- economica, estandar, premium
     sku            text unique,
     stock_quantity integer not null default 0 check (stock_quantity >= 0),
+    price          numeric(12, 2),             -- precio por talla (NULL = usar products.price)
     created_at     timestamptz not null default now(),
     updated_at     timestamptz not null default now()
 );
+
+-- Salvaguarda por si la tabla ya existia sin la columna price
+alter table public.variants add column if not exists price numeric(12, 2);
 
 -- 1.5 PRODUCT_IMAGES (fotos adicionales)
 create table if not exists public.product_images (
