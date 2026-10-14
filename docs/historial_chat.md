@@ -87,6 +87,12 @@
 - **Alta de producto → tallas seleccionadas:** la tabla Precio/Cantidad se reemplazó por filas
   flexibles que se ajustan al ancho de la pantalla.
 
+### 11. Género
+- Selector de género en nuevo/editar producto ahora incluye **Niño** y **Niña** (además de
+  Hombre, Mujer, Unisex).
+- En el **catálogo** (tarjetas de la pantalla principal) se muestra el **género** debajo del
+  nombre y encima de la categoría (se deriva de las variantes; se oculta si no tiene).
+
 ### Nota: expiración de token
 - Síntoma: mensajes rojos "token inválido o expirado" en Usuarios/Roles, Ventas y Reportes.
 - Causa: la sesión del navegador tenía el token vencido. **Solución:** cerrar sesión y reingresar.
@@ -133,6 +139,9 @@
   - `a375b5c` historial de sesion (actualizado)
   - `8a28e00` nav responsive sin logo (sin scroll horizontal en movil)
   - `0c20be1` variantes y tallas en tarjetas apilables (sin desborde en movil)
+  - `8598c25` historial (ajustes UI movil)
+  - `745b470` agregar Nino y Nina al selector de genero
+  - `58a219d` mostrar genero en las tarjetas del catalogo
 - **Deploy frontend:** `push` a `main` → GitHub Actions publica en GitHub Pages (solo si cambia
   `inventario-frontend/**` o el workflow).
 - **Deploy backend (Railway):** NO es automatico. Hay que redesplegar manualmente en Railway
