@@ -21,10 +21,11 @@
 </script>
 
 <header class="bg-slate-900 text-white sticky top-0 z-20">
-  <div class="max-w-6xl mx-auto px-4 h-14 flex items-center gap-2">
+  <div
+    class="max-w-6xl mx-auto px-2 sm:px-4 min-h-[3.5rem] py-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
     {#if perfilActual.permite('usuarios')}
       <button
-        class="p-2 rounded hover:bg-slate-800"
+        class="p-2 rounded hover:bg-slate-800 shrink-0"
         aria-label="Abrir menú de usuarios"
         title="Usuarios y roles"
         onclick={() => (menuAbierto = true)}>
@@ -39,21 +40,24 @@
         </svg>
       </button>
     {/if}
-    <button class="font-semibold mr-2" onclick={() => navegar('/')}>👗 Inventario</button>
+
     <nav class="flex gap-1">
       {#each enlaces as e}
         <button
-          class="px-3 py-1.5 rounded text-sm {router.ruta === e.path ? 'bg-slate-700' : 'hover:bg-slate-800'}"
+          class="px-2 sm:px-3 py-1.5 rounded text-sm whitespace-nowrap {router.ruta === e.path
+            ? 'bg-slate-700'
+            : 'hover:bg-slate-800'}"
           onclick={() => navegar(e.path)}>{e.texto}</button>
       {/each}
     </nav>
+
     <div class="ml-auto flex items-center gap-2 text-sm">
-      <span class="hidden sm:inline text-slate-300">{perfilActual.nombre || auth.usuario?.email || ''}</span>
+      <span class="hidden sm:inline text-slate-300 whitespace-nowrap">{perfilActual.nombre || auth.usuario?.email || ''}</span>
       {#if perfilActual.rol}
-        <span class="px-2 py-0.5 rounded-full text-xs bg-slate-700 text-slate-200">{perfilActual.rol}</span>
+        <span class="px-2 py-0.5 rounded-full text-xs bg-slate-700 text-slate-200 whitespace-nowrap">{perfilActual.rol}</span>
       {/if}
       <button
-        class="px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600"
+        class="px-2 sm:px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 whitespace-nowrap"
         onclick={() => auth.logout()}>Salir</button>
     </div>
   </div>
