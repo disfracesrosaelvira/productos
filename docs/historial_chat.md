@@ -77,6 +77,22 @@
   Fantasía Series Películas 15). Ninguno quedó sin categoría.
 - Seed actualizado en `db/supabase_schema.sql`.
 
+### 10. Ajustes de UI para móvil (sin scroll horizontal)
+- **Barra de navegación (`Nav.svelte`):** se quitó el logo/texto "👗 Inventario"; padding y gaps
+  reducidos en móvil; la barra usa `flex-wrap` y `whitespace-nowrap`, así se reacomoda y no
+  desborda (entran ☰, Catálogo, Ventas, Reportes, rol y Salir).
+- **Editar producto → "Tallas / variantes (stock y precio)":** se reemplazó la tabla de 7 columnas
+  por **tarjetas apilables**. Al pulsar ✏️ la tarjeta se expande en vertical (Precio, Stock,
+  Guardar/Cancelar) sin desbordar.
+- **Alta de producto → tallas seleccionadas:** la tabla Precio/Cantidad se reemplazó por filas
+  flexibles que se ajustan al ancho de la pantalla.
+
+### Nota: expiración de token
+- Síntoma: mensajes rojos "token inválido o expirado" en Usuarios/Roles, Ventas y Reportes.
+- Causa: la sesión del navegador tenía el token vencido. **Solución:** cerrar sesión y reingresar.
+- Se hizo un ajuste de código para auto-refrescar el token, pero se **revirtió** (el usuario lo
+  resolvió con re-login) y no se dejó cambio.
+
 ---
 
 ## Migraciones SQL aplicadas (en Supabase → SQL Editor)
@@ -114,6 +130,9 @@
   - `bd6960e` historial de sesion
   - `f6efb7d` tallas multiples con precio y cantidad por talla
   - `80d925c` seed de categorias a las 8 nuevas
+  - `a375b5c` historial de sesion (actualizado)
+  - `8a28e00` nav responsive sin logo (sin scroll horizontal en movil)
+  - `0c20be1` variantes y tallas en tarjetas apilables (sin desborde en movil)
 - **Deploy frontend:** `push` a `main` → GitHub Actions publica en GitHub Pages (solo si cambia
   `inventario-frontend/**` o el workflow).
 - **Deploy backend (Railway):** NO es automatico. Hay que redesplegar manualmente en Railway
