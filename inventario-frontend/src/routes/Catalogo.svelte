@@ -27,6 +27,12 @@
 
   const totalStock = (p) => (p.variants ?? []).reduce((s, v) => s + (v.stock_quantity || 0), 0)
 
+  const capitalizar = (t) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : t)
+  const generoDe = (p) =>
+    [...new Set((p.variants ?? []).map((v) => v.gender).filter(Boolean))]
+      .map(capitalizar)
+      .join(' · ')
+
   async function cargar() {
     cargando = true
     error = ''
@@ -193,6 +199,9 @@
           </div>
           <div class="p-3 space-y-1">
             <p class="font-medium text-sm leading-tight line-clamp-2">{p.name}</p>
+            {#if generoDe(p)}
+              <p class="text-[11px] text-slate-500">{generoDe(p)}</p>
+            {/if}
             {#if p.categories}
               <span class="inline-block text-[11px] bg-slate-100 text-slate-600 rounded px-2 py-0.5">
                 {p.categories.name}
