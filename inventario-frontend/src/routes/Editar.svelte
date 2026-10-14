@@ -10,6 +10,8 @@
 
   const TALLAS = ['0', '2', '4', '6', '8', '10', '12', '14', '16', 'S', 'M', 'L']
   const GENEROS = [
+    { valor: 'niño', texto: 'Niño' },
+    { valor: 'niña', texto: 'Niña' },
     { valor: 'hombre', texto: 'Hombre' },
     { valor: 'mujer', texto: 'Mujer' },
     { valor: 'unisex', texto: 'Unisex' },
