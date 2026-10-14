@@ -232,61 +232,63 @@
         {#if variantes.length === 0}
           <p class="text-sm text-slate-500">Sin tallas registradas.</p>
         {:else}
-          <div class="overflow-hidden rounded-lg border border-slate-200">
-            <table class="w-full text-sm">
-              <thead class="bg-slate-50 text-left text-slate-500">
-                <tr>
-                  <th class="px-3 py-2">SKU</th>
-                  <th class="px-3 py-2">Talla</th>
-                  <th class="px-3 py-2">Género</th>
-                  <th class="px-3 py-2">Tela</th>
-                  <th class="px-3 py-2 text-right">Precio (S/)</th>
-                  <th class="px-3 py-2 text-right">Stock</th>
-                  <th class="px-3 py-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each variantes as v (v.id)}
-                  <tr class="border-t border-slate-100">
-                    <td class="px-3 py-2 font-mono text-xs">{v.sku}</td>
-                    <td class="px-3 py-2">{v.size ?? '—'}</td>
-                    <td class="px-3 py-2">{v.gender ?? '—'}</td>
-                    <td class="px-3 py-2">{v.fabric_quality ?? '—'}</td>
-                    <td class="px-3 py-2 text-right">
-                      {#if editandoId === v.id}
+          <ul class="space-y-2">
+            {#each variantes as v (v.id)}
+              <li class="rounded-lg border border-slate-200 bg-white p-3">
+                {#if editandoId === v.id}
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                      <p class="font-medium">Talla {v.size ?? '—'}</p>
+                      <p class="text-xs font-mono text-slate-400 truncate">{v.sku}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <label class="block text-sm">
+                        <span class="text-slate-500">Precio (S/)</span>
                         <input type="number" step="0.01" min="0" bind:value={precioEdit}
-                          class="w-24 rounded border border-slate-300 px-2 py-1 text-right" />
-                      {:else}
-                        {v.price == null ? (form.price ? soles(form.price) : '—') : soles(v.price)}
-                      {/if}
-                    </td>
-                    <td class="px-3 py-2 text-right">
-                      {#if editandoId === v.id}
+                          class="mt-1 w-full rounded border border-slate-300 px-2 py-1" />
+                      </label>
+                      <label class="block text-sm">
+                        <span class="text-slate-500">Stock</span>
                         <input type="number" min="0" bind:value={stockEdit}
-                          class="w-20 rounded border border-slate-300 px-2 py-1 text-right" />
-                      {:else}
-                        <span class={v.stock_quantity > 0 ? '' : 'text-red-500'}>{v.stock_quantity}</span>
+                          class="mt-1 w-full rounded border border-slate-300 px-2 py-1" />
+                      </label>
+                    </div>
+                    <div class="flex gap-2">
+                      <button type="button" disabled={guardandoStock}
+                        class="rounded bg-emerald-600 text-white px-3 py-1.5 text-sm hover:bg-emerald-500 disabled:opacity-60"
+                        onclick={() => guardarStock(v)}>Guardar</button>
+                      <button type="button" disabled={guardandoStock}
+                        class="rounded border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
+                        onclick={cancelarEdicion}>Cancelar</button>
+                    </div>
+                  </div>
+                {:else}
+                  <div class="flex items-center gap-3">
+                    <div class="flex-1 min-w-0">
+                      <p class="font-medium">Talla {v.size ?? '—'}</p>
+                      <p class="text-xs font-mono text-slate-400 truncate">{v.sku}</p>
+                      {#if v.gender || v.fabric_quality}
+                        <p class="text-xs text-slate-500">
+                          {[v.gender, v.fabric_quality].filter(Boolean).join(' · ')}
+                        </p>
                       {/if}
-                    </td>
-                    <td class="px-3 py-2 text-right whitespace-nowrap">
-                      {#if editandoId === v.id}
-                        <button type="button" disabled={guardandoStock}
-                          class="text-emerald-600 hover:underline"
-                          onclick={() => guardarStock(v)}>Guardar</button>
-                        <button type="button" disabled={guardandoStock}
-                          class="ml-2 text-slate-500 hover:underline"
-                          onclick={cancelarEdicion}>Cancelar</button>
-                      {:else}
-                        <button type="button" title="Editar stock y precio" aria-label="Editar stock y precio"
-                          class="text-slate-600 hover:text-slate-900"
-                          onclick={() => editarStock(v)}>✏️</button>
-                      {/if}
-                    </td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                      <p class="text-sm font-medium">
+                        {v.price == null ? (form.price ? soles(form.price) : '—') : soles(v.price)}
+                      </p>
+                      <p class="text-xs {v.stock_quantity > 0 ? 'text-slate-500' : 'text-red-500'}">
+                        Stock: {v.stock_quantity}
+                      </p>
+                    </div>
+                    <button type="button" title="Editar stock y precio" aria-label="Editar stock y precio"
+                      class="shrink-0 p-2 rounded hover:bg-slate-100 text-slate-600"
+                      onclick={() => editarStock(v)}>✏️</button>
+                  </div>
+                {/if}
+              </li>
+            {/each}
+          </ul>
         {/if}
       </fieldset>
     {/if}
@@ -341,36 +343,24 @@
       </div>
 
       {#if tallasSel.length > 0}
-        <div class="overflow-hidden rounded-lg border border-slate-200">
-          <table class="w-full text-sm">
-            <thead class="bg-slate-50 text-left text-slate-500">
-              <tr>
-                <th class="px-3 py-2">Talla</th>
-                <th class="px-3 py-2">Precio (S/)</th>
-                <th class="px-3 py-2">Cantidad</th>
-                <th class="px-3 py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each tallasOrdenadas as t (t)}
-                <tr class="border-t border-slate-100">
-                  <td class="px-3 py-2 font-medium">{t}</td>
-                  <td class="px-3 py-2">
-                    <input type="number" step="0.01" min="0" bind:value={filas[t].precio}
-                      class="w-24 rounded border border-slate-300 px-2 py-1" />
-                  </td>
-                  <td class="px-3 py-2">
-                    <input type="number" min="0" bind:value={filas[t].cantidad}
-                      class="w-20 rounded border border-slate-300 px-2 py-1" />
-                  </td>
-                  <td class="px-3 py-2 text-right">
-                    <button type="button" class="text-slate-400 hover:text-red-600"
-                      aria-label="Quitar talla" onclick={() => toggleTalla(t)}>✕</button>
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
+        <div class="space-y-2">
+          {#each tallasOrdenadas as t (t)}
+            <div class="flex items-end gap-2">
+              <span class="w-10 shrink-0 pb-1.5 text-sm font-medium">{t}</span>
+              <label class="flex-1 min-w-0">
+                <span class="block text-xs text-slate-500">Precio (S/)</span>
+                <input type="number" step="0.01" min="0" bind:value={filas[t].precio}
+                  class="mt-0.5 w-full rounded border border-slate-300 px-2 py-1" />
+              </label>
+              <label class="flex-1 min-w-0">
+                <span class="block text-xs text-slate-500">Cantidad</span>
+                <input type="number" min="0" bind:value={filas[t].cantidad}
+                  class="mt-0.5 w-full rounded border border-slate-300 px-2 py-1" />
+              </label>
+              <button type="button" class="shrink-0 p-1.5 text-slate-400 hover:text-red-600"
+                aria-label="Quitar talla" onclick={() => toggleTalla(t)}>✕</button>
+            </div>
+          {/each}
         </div>
 
         <div class="flex flex-wrap items-end gap-3 text-sm">
