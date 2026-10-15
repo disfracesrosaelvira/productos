@@ -44,6 +44,7 @@
   let stockEdit = $state(0)
   let precioEdit = $state('')
   let guardandoStock = $state(false)
+  let guardandoFotos = $state(false)
   let guardando = $state(false)
   let error = $state('')
 
@@ -96,7 +97,9 @@
         }
         conComentario = !!p.description
         comentario = p.description ?? ''
-        fotosExistentes = p.product_images ?? []
+        fotosExistentes = [...(p.product_images ?? [])].sort(
+          (a, b) => (a.position ?? 0) - (b.position ?? 0),
+        )
         variantes = await api.listarVariantes({ product_id: id })
       } catch (e) {
         error = e.message
@@ -106,6 +109,46 @@
 
   async function cargarVariantes() {
     variantes = await api.listarVariantes({ product_id: id })
+  }
+
+  async function recargarFotos() {
+    const p = await api.obtenerProducto(id)
+    fotosExistentes = [...(p.product_images ?? [])].sort(
+      (a, b) => (a.position ?? 0) - (b.position ?? 0),
+    )
+  }
+
+  async function eliminarFoto(img) {
+    if (!confirm('¿Eliminar esta foto?')) return
+    guardandoFotos = true
+    error = ''
+    try {
+      await api.eliminarImagen(id, img.id)
+      await recargarFotos()
+    } catch (e) {
+      error = e.message
+    } finally {
+      guardandoFotos = false
+    }
+  }
+
+  async function moverFoto(indice, dir) {
+    const destino = indice + dir
+    if (destino < 0 || destino >= fotosExistentes.length) return
+    const copia = [...fotosExistentes]
+    const [movida] = copia.splice(indice, 1)
+    copia.splice(destino, 0, movida)
+    fotosExistentes = copia
+    guardandoFotos = true
+    error = ''
+    try {
+      await api.reordenarImagenes(id, copia.map((x) => x.id))
+      await recargarFotos()
+    } catch (e) {
+      error = e.message
+    } finally {
+      guardandoFotos = false
+    }
   }
 
   function editarStock(v) {
@@ -415,10 +458,45 @@
 
       {#if fotosExistentes.length > 0}
         <div>
-          <p class="text-xs text-slate-500 mb-1">Ya guardadas:</p>
-          <div class="grid grid-cols-4 gap-2">
-            {#each fotosExistentes as img (img.id)}
-              <img src={img.image_url} alt="" class="aspect-square w-full object-cover rounded border border-slate-200" />
+          <p class="text-xs text-slate-500 mb-1">
+            Ya guardadas (la primera es la que se muestra en el catálogo):
+          </p>
+          <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            {#each fotosExistentes as img, i (img.id)}
+              <div class="relative rounded border border-slate-200 overflow-hidden">
+                <img src={img.image_url} alt="" class="aspect-square w-full object-cover" />
+                {#if i === 0}
+                  <span
+                    class="absolute top-1 left-1 rounded bg-slate-900/80 text-white text-[10px] px-1.5 py-0.5">
+                    Principal
+                  </span>
+                {/if}
+                <button
+                  type="button"
+                  disabled={guardandoFotos}
+                  class="absolute top-1 right-1 w-6 h-6 rounded-full bg-white/90 text-slate-700 leading-none shadow hover:bg-white disabled:opacity-50"
+                  title="Eliminar foto"
+                  aria-label="Eliminar foto"
+                  onclick={() => eliminarFoto(img)}>✕</button>
+                {#if fotosExistentes.length > 1}
+                  <div class="absolute inset-x-0 bottom-0 flex justify-between bg-black/45">
+                    <button
+                      type="button"
+                      disabled={i === 0 || guardandoFotos}
+                      class="px-2 py-1 text-white disabled:opacity-30"
+                      title="Mover antes"
+                      aria-label="Mover antes"
+                      onclick={() => moverFoto(i, -1)}>◀</button>
+                    <button
+                      type="button"
+                      disabled={i === fotosExistentes.length - 1 || guardandoFotos}
+                      class="px-2 py-1 text-white disabled:opacity-30"
+                      title="Mover después"
+                      aria-label="Mover después"
+                      onclick={() => moverFoto(i, 1)}>▶</button>
+                  </div>
+                {/if}
+              </div>
             {/each}
           </div>
         </div>

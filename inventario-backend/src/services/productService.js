@@ -163,3 +163,35 @@ export async function eliminarImagen(productId, imageId) {
   }
   return { ok: true };
 }
+
+// Reordena las imagenes de un producto. La primera del arreglo queda como principal.
+export async function reordenarImagenes(productId, orden) {
+  await getProduct(productId);
+
+  const { data: imgs, error } = await supabaseAdmin
+    .from('product_images')
+    .select('id, image_url')
+    .eq('product_id', productId);
+  if (error) throw new AppError(error.message, 500);
+
+  const delProducto = new Set((imgs ?? []).map((i) => i.id));
+  const secuencia = orden.filter((id) => delProducto.has(id));
+  if (secuencia.length === 0) throw new AppError('Ninguna imagen pertenece al producto', 400);
+
+  for (let i = 0; i < secuencia.length; i++) {
+    const { error: errUpd } = await supabaseAdmin
+      .from('product_images')
+      .update({ position: i, is_primary: i === 0 })
+      .eq('id', secuencia[i]);
+    if (errUpd) throw new AppError(errUpd.message, 500);
+  }
+
+  const urlPrincipal = (imgs ?? []).find((i) => i.id === secuencia[0])?.image_url ?? null;
+  const { error: errProd } = await supabaseAdmin
+    .from('products')
+    .update({ image_url: urlPrincipal })
+    .eq('id', productId);
+  if (errProd) throw new AppError(errProd.message, 500);
+
+  return getProduct(productId);
+}

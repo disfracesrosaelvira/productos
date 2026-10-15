@@ -5,6 +5,7 @@ import {
   actualizarProducto,
   crearProducto,
   filtrosProducto,
+  ordenImagenes,
 } from '../schemas/product.js';
 import * as service from '../services/productService.js';
 
@@ -40,6 +41,11 @@ export default async function productRoutes(fastify) {
       isPrimary: request.query.primary === 'true',
     });
     return reply.code(201).send(imagen);
+  });
+
+  fastify.patch('/:id/images', { preHandler: requireAuth }, async (request) => {
+    const { orden } = validate(ordenImagenes, request.body);
+    return service.reordenarImagenes(request.params.id, orden);
   });
 
   fastify.delete('/:id/images/:imageId', { preHandler: requireAuth }, async (request) =>

@@ -49,6 +49,8 @@ export const api = {
     return request(`/products/${id}/images?primary=${primary}`, { method: 'POST', body: fd })
   },
   eliminarImagen: (id, imageId) => request(`/products/${id}/images/${imageId}`, { method: 'DELETE' }),
+  reordenarImagenes: (id, orden) =>
+    request(`/products/${id}/images`, { method: 'PATCH', body: JSON.stringify({ orden }) }),
 
   // --- variantes ---
   listarVariantes: (params = {}) => {

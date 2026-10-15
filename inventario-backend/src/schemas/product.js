@@ -12,6 +12,10 @@ export const crearProducto = z.object({
 
 export const actualizarProducto = crearProducto.partial();
 
+export const ordenImagenes = z.object({
+  orden: z.array(z.string().uuid()).min(1, 'Debe enviar el orden de las imagenes'),
+});
+
 export const filtrosProducto = z.object({
   q: z.string().trim().optional(),
   category: z.string().trim().optional(),
