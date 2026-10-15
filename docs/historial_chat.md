@@ -159,6 +159,7 @@
   - `58a219d` mostrar genero en las tarjetas del catalogo
   - `d61372b` historial (genero en catalogo)
   - `68dd210` eliminar y reordenar fotos en editar producto
+  - `84722e5` documentacion del sistema actualizada (roles, movimientos, tallas con precio, fotos)
 - **Deploy frontend:** `push` a `main` → GitHub Actions publica en GitHub Pages (solo si cambia
   `inventario-frontend/**` o el workflow).
 - **Deploy backend (Railway):** NO es automatico. Hay que redesplegar manualmente en Railway
@@ -167,6 +168,12 @@
   que en produccion aun devuelven 404.
 
 ---
+
+## Estado actual / siguiente paso al regresar
+- Todo el trabajo está **commiteado y pusheado** a `main` (último commit: `84722e5`).
+- Documentación Word regenerada: `docs/Documentacion_Sistema_Inventario_Disfraces.docx`.
+- **Único pendiente accionable:** redesplegar el **backend en Railway** para que funcionen
+  `PATCH/DELETE /products/:id/images` (reordenar/eliminar fotos); en producción aún dan 404.
 
 ## Pendientes / notas al retomar
 - `docs/Documentacion_App_Backus_Merch.docx` y `scripts/generar_documento_merch.py`
