@@ -93,6 +93,21 @@
 - En el **catálogo** (tarjetas de la pantalla principal) se muestra el **género** debajo del
   nombre y encima de la categoría (se deriva de las variantes; se oculta si no tiene).
 
+### 12. Fotos en Editar — eliminar y reordenar
+- `Editar.svelte`: cada foto tiene **✕** para eliminarla y **◀ ▶** para reordenarla; la primera se
+  marca como **Principal** (portada del catálogo).
+- Backend: `PATCH /products/:id/images` (reordenar) y `DELETE /products/:id/images` (eliminar);
+  `services/productService.js` actualiza `position`/`is_primary`.
+- **Pendiente:** desplegar el backend en Railway para que estos endpoints (404 en prod) funcionen.
+
+### 13. Documentación Word regenerada
+- `scripts/generar_documento.py` actualizado: diagramas ER + `usuarios_roles` + `movimientos`,
+  datos de `variants.price`/`stock_movements`/`rol`/`profiles.estado`, endpoints nuevos,
+  config de roles, secciones 14 (Usuarios/Roles) y 15 (Movimientos), mockups (catálogo con
+  género/autocompletado, alta con tallas múltiples, detalle con precio/movimientos, editar,
+  usuarios/roles), anexo de migraciones y nav con hamburguesa.
+- Regenerado `docs/Documentacion_Sistema_Inventario_Disfraces.docx`.
+
 ### Nota: expiración de token
 - Síntoma: mensajes rojos "token inválido o expirado" en Usuarios/Roles, Ventas y Reportes.
 - Causa: la sesión del navegador tenía el token vencido. **Solución:** cerrar sesión y reingresar.
@@ -142,10 +157,14 @@
   - `8598c25` historial (ajustes UI movil)
   - `745b470` agregar Nino y Nina al selector de genero
   - `58a219d` mostrar genero en las tarjetas del catalogo
+  - `d61372b` historial (genero en catalogo)
+  - `68dd210` eliminar y reordenar fotos en editar producto
 - **Deploy frontend:** `push` a `main` → GitHub Actions publica en GitHub Pages (solo si cambia
   `inventario-frontend/**` o el workflow).
 - **Deploy backend (Railway):** NO es automatico. Hay que redesplegar manualmente en Railway
   (ya se hizo para `f6efb7d`; verificado: `/products` devuelve `price` en variantes).
+  **Falta redesplegar** para `PATCH/DELETE /products/:id/images` (reordenar/eliminar fotos),
+  que en produccion aun devuelven 404.
 
 ---
 

@@ -153,16 +153,15 @@ DIAGRAMAS = {
     CATEGORIES ||--o{ PRODUCTS : clasifica
     PRODUCTS ||--o{ VARIANTS : tiene
     PRODUCTS ||--o{ PRODUCT_IMAGES : posee
-    PRODUCTS ||--o{ PRODUCT_TAGS : etiqueta
-    TAGS ||--o{ PRODUCT_TAGS : aplica
+    ROL ||--o{ PROFILES : asigna
     VARIANTS ||--o{ SALE_ITEMS : vendido_en
+    VARIANTS ||--o{ STOCK_MOVEMENTS : registra
     SALES ||--o{ SALE_ITEMS : contiene
     PROFILES ||--o{ SALES : registra
     CATEGORIES {
         uuid id PK
         text name
         text slug
-        uuid parent_id FK
     }
     PRODUCTS {
         uuid id PK
@@ -181,6 +180,7 @@ DIAGRAMAS = {
         text fabric_quality
         text sku UK
         int stock_quantity
+        numeric price
     }
     PRODUCT_IMAGES {
         uuid id PK
@@ -188,6 +188,27 @@ DIAGRAMAS = {
         text image_url
         boolean is_primary
         int position
+    }
+    ROL {
+        uuid id PK
+        text nombre UK
+        text descripcion
+        jsonb permisos
+    }
+    PROFILES {
+        uuid id PK
+        text email
+        text full_name
+        text role FK
+        int estado
+    }
+    STOCK_MOVEMENTS {
+        uuid id PK
+        uuid variant_id FK
+        text tipo_movimiento
+        int cantidad_movimiento
+        timestamptz fecha_movimiento
+        text referencia
     }
     SALES {
         uuid id PK
@@ -202,12 +223,31 @@ DIAGRAMAS = {
         uuid variant_id FK
         int quantity
         numeric unit_price
-    }
-    PROFILES {
-        uuid id PK
-        text email
-        text role
     }""",
+
+    "usuarios_roles": """flowchart TB
+    L["Login - Supabase Auth"] --> P["profiles: rol + estado"]
+    P -->|admin| A["Catalogo, Ventas, Reportes y Usuarios/Roles"]
+    P -->|supervisor| S["Catalogo, Ventas y Reportes"]
+    P -->|vendedor| V["Catalogo y Ventas"]
+    A --> G["Gestion de usuarios: Auth + profiles"]
+    A --> R["Gestion de roles"]
+    R --> PERM["permisos por menu: catalogo / ventas / reportes / usuarios"]
+    G --> BAN["Inactivo = estado 0 + ban en Auth"]""",
+
+    "movimientos": """sequenceDiagram
+    participant U as Usuario
+    participant API as API Fastify
+    participant DB as PostgreSQL
+    participant M as stock_movements
+    U->>API: Registrar venta (POST /sales)
+    API->>DB: INSERT sale_items
+    DB->>M: TRIGGER Venta (cantidad negativa)
+    U->>API: Ajustar stock o precio (PATCH /variants/:id/stock)
+    API->>M: Entrada / Salida
+    U->>API: Consultar historial (GET /movements)
+    API->>M: SELECT por variante o producto
+    M-->>U: tipo_movimiento, cantidad, fecha""",
 
     "despliegue": """flowchart LR
     subgraph DEV["Desarrollo local"]
@@ -311,15 +351,20 @@ def img_placeholder(d, box, c, hi, label="foto"):
             fill=c["muted"], anchor="mm")
 
 
-def base_screen(titulo, hi):
+def base_screen(titulo, hi, con_usuarios=True):
     c = pal(hi)
     img = Image.new("RGB", (W, H), c["bg"])
     d = ImageDraw.Draw(img)
     rr(d, (0, 0, W, 56), fill=c["header"])
-    txt(d, (20, 28), "Inventario de Disfraces", 18, True, c["htext"], anchor="lm")
+    x = 20
+    if con_usuarios:  # boton hamburguesa (solo admin)
+        for k in range(3):
+            d.line((x, 20 + k * 8, x + 22, 20 + k * 8), fill=c["htext"], width=2)
+        x += 40
     for i, t in enumerate(["Catálogo", "Ventas", "Reportes"]):
-        txt(d, (330 + i * 110, 28), t, 14, False, c["htext"], anchor="lm")
-    txt(d, (W - 20, 28), "salir", 13, False, c["htext"], anchor="rm")
+        txt(d, (x + i * 110, 28), t, 14, False, c["htext"], anchor="lm")
+    txt(d, (W - 150, 28), "admin", 12, False, c["htext"], anchor="lm")
+    txt(d, (W - 20, 28), "Salir", 13, False, c["htext"], anchor="rm")
     if titulo:
         txt(d, (30, 84), titulo, 22, True, c["ink"])
     return img, d, c
@@ -351,21 +396,27 @@ def mock_catalogo(hi):
     txt(d, (610, 145), "Todos los géneros v", 12, fill=c["muted"])
     button(d, (740, 136, 830, 170), "Buscar", c, hi)
     button(d, (840, 136, 970, 170), "Limpiar", c, hi, "ghost")
+    # autocompletado (lista desplegable al escribir)
+    rr(d, (44, 172, 430, 196), fill=c["card"], outline=c["accent"], r=4)
+    txt(d, (52, 178), "Blanca Nieves  ·  Anime Cosplay", 11, fill=c["ink"])
     nombres = ["Capitán América", "Spiderman", "Mujer Maravilla", "Gekko",
                "Maléfica", "Skye Paw Patrol", "Blanca Nieves", "Gatúbela"]
+    generos = ["Niño", "Niño", "Mujer", "Niño", "Mujer", "Niña", "Niña", "Mujer"]
     precios = ["S/ 45.00", "S/ 40.00", "S/ 40.00", "S/ 50.00",
                "S/ 150.00", "S/ 45.00", "S/ 45.00", "S/ 90.00"]
-    x0, y0, cw, chh, gap = 30, 200, 220, 230, 16
+    x0, y0, cw, chh, gap = 30, 208, 220, 222, 16
     for i in range(8):
         r, col = divmod(i, 4)
         x = x0 + col * (cw + gap)
         y = y0 + r * (chh + gap)
         rr(d, (x, y, x + cw, y + chh), fill=c["card"], outline=c["line"], r=10)
-        img_placeholder(d, (x + 8, y + 8, x + cw - 8, y + 145), c, hi)
-        txt(d, (x + 12, y + 160), nombres[i], 13, True, c["ink"])
-        txt(d, (x + 12, y + 184), precios[i], 13, True, c["ink"])
-        txt(d, (x + cw - 12, y + 184), "8 und.", 11, fill=c["ok"], anchor="ra")
-        rr(d, (x + 12, y + 206, x + 70, y + 222), fill=c["chip"], r=4)
+        img_placeholder(d, (x + 8, y + 8, x + cw - 8, y + 138), c, hi)
+        txt(d, (x + 12, y + 150), nombres[i], 13, True, c["ink"])
+        txt(d, (x + 12, y + 170), generos[i], 11, fill=c["muted"])
+        txt(d, (x + 12, y + 190), precios[i], 13, True, c["ink"])
+        txt(d, (x + cw - 12, y + 190), "8 und.", 11, fill=c["ok"], anchor="ra")
+        rr(d, (x + 12, y + 206, x + 78, y + 220), fill=c["chip"], r=4)
+        txt(d, (x + 16, y + 207), "Anime Cosplay", 8, fill=c["ink"])
     return img
 
 
@@ -377,47 +428,81 @@ def mock_detalle(hi):
     for i in range(4):
         box = (30 + i * 90, 534, 106 + i * 90, 610)
         rr(d, box, fill=c["img"], outline=c["accent"] if i == 0 else c["line"], w=2 if i == 0 else 1, r=6)
-    txt(d, (520, 110), "Capitán América", 24, True, c["ink"])
-    rr(d, (520, 148, 660, 172), fill=c["chip"], r=4)
-    txt(d, (528, 152), "Superhéroes", 12, fill=c["ink"])
-    txt(d, (520, 190), "S/ 45.00", 22, True, c["ink"])
-    txt(d, (520, 240), "Tallas / variantes", 15, True, c["ink"])
-    cols = ["SKU", "Talla", "Género", "Tela", "Stock"]
+    txt(d, (520, 106), "Blanca Nieves", 24, True, c["ink"])
+    txt(d, (520, 140), "Niña · tela raso", 12, fill=c["muted"])
+    rr(d, (520, 162, 668, 186), fill=c["chip"], r=4)
+    txt(d, (528, 166), "Anime Cosplay", 12, fill=c["ink"])
+    txt(d, (520, 204), "S/ 45.00", 20, True, c["ink"])
+
+    txt(d, (520, 248), "Tallas / variantes", 14, True, c["ink"])
+    cols = ["SKU", "Talla", "Precio", "Stock"]
     for i, h in enumerate(cols):
-        txt(d, (525 + i * 88, 272), h, 11, True, c["muted"])
-    filas = [("SUP-NIN-4", "4", "niño", "polinan", "5"),
-             ("SUP-NIN-6", "6", "niño", "polinan", "4"),
-             ("SUP-NIN-8", "8", "niño", "polinan", "3")]
+        txt(d, (525 + i * 100, 276), h, 11, True, c["muted"])
+    filas = [("NINA-04", "4", "S/ 45", "6"), ("NINA-06", "6", "S/ 45", "6"),
+             ("NINA-08", "8", "S/ 48", "4")]
     for j, fila in enumerate(filas):
         for i, v in enumerate(fila):
-            txt(d, (525 + i * 88, 300 + j * 30), v, 11, fill=c["ink"])
-    button(d, (520, 420, 600, 456), "Editar", c, hi)
-    button(d, (615, 420, 720, 456), "Eliminar", c, hi, "danger")
+            txt(d, (525 + i * 100, 302 + j * 26), v, 11, fill=c["ink"])
+
+    txt(d, (520, 398), "Movimientos de stock", 14, True, c["ink"])
+    mcols = ["Variante", "Tipo", "Cant.", "Fecha"]
+    for i, h in enumerate(mcols):
+        txt(d, (525 + i * 100, 426), h, 11, True, c["muted"])
+    movs = [("NINA-04", "Entrada", "+10", "30/08"), ("NINA-04", "Venta", "-2", "01/09")]
+    for j, fila in enumerate(movs):
+        for i, v in enumerate(fila):
+            txt(d, (525 + i * 100, 452 + j * 24), v, 11, fill=c["ink"])
+
+    button(d, (520, 520, 600, 556), "Editar", c, hi)
+    button(d, (615, 520, 730, 556), "Eliminar", c, hi, "danger")
     return img
 
 
 def mock_nuevo(hi):
     img, d, c = base_screen("Nuevo producto", hi)
-    field(d, (30, 130, 970, 180), "Nombre", c, hi, "Capitán América")
-    field(d, (30, 194, 470, 244), "Precio (S/)", c, hi, "45.00")
-    rr(d, (500, 194, 970, 244), fill=c["card"], outline=c["line"], r=6)
-    txt(d, (510, 202), "Categoría", 12, True, c["ink"])
-    txt(d, (510, 220), "Superhéroes v", 12, fill=c["muted"])
-    rr(d, (30, 262, 970, 360), fill=c["card"], outline=c["line"], r=8)
-    txt(d, (44, 272), "Variante (talla / género / stock)", 12, True, c["muted"])
-    for i, (lbl, val) in enumerate([("Talla", "4 v"), ("Género", "Niño v"), ("Cantidad", "5")]):
-        rr(d, (44 + i * 305, 296, 316 + i * 305, 344), fill=c["card"], outline=c["line"], r=6)
-        txt(d, (54 + i * 305, 302), lbl, 11, True, c["ink"])
-        txt(d, (54 + i * 305, 320), val, 12, fill=c["muted"])
-    txt(d, (44, 372), "[ ] Comentar calidad de la tela (opcional)", 12, fill=c["ink"])
-    txt(d, (44, 400), "[ ] Agregar comentario (opcional)", 12, fill=c["ink"])
-    txt(d, (44, 428), "[x] Activo", 12, fill=c["ink"])
-    txt(d, (30, 466), "Fotos (1 a 3)", 13, True, c["ink"])
-    button(d, (30, 490, 170, 528), "Tomar foto", c, hi)
-    button(d, (185, 490, 360, 528), "Desde galería", c, hi, "ghost")
+    field(d, (30, 126, 970, 176), "Nombre", c, hi, "Blanca Nieves")
+    field(d, (30, 190, 470, 240), "Precio base (S/)", c, hi, "45.00")
+    rr(d, (500, 190, 970, 240), fill=c["card"], outline=c["line"], r=6)
+    txt(d, (510, 198), "Categoría", 12, True, c["ink"])
+    txt(d, (510, 216), "Anime Cosplay v", 12, fill=c["muted"])
+
+    rr(d, (30, 254, 500, 304), fill=c["card"], outline=c["line"], r=6)
+    txt(d, (40, 262), "Género", 11, True, c["ink"])
+    txt(d, (40, 280), "Niña / Niño / Hombre / Mujer / Unisex v", 11, fill=c["muted"])
+    rr(d, (516, 254, 970, 304), fill=c["card"], outline=c["line"], r=6)
+    txt(d, (526, 262), "Tela (opcional)", 11, True, c["ink"])
+    txt(d, (526, 280), "Polinan v   (lista fija)", 11, fill=c["muted"])
+
+    txt(d, (30, 316), "Tallas (elige una o varias)", 12, True, c["ink"])
+    tallas = ["0", "2", "4", "6", "8", "10", "12", "14", "16", "S", "M", "L"]
+    sel = {"4", "6", "8", "10", "12"}
+    x = 30
+    for t in tallas:
+        wd = 44
+        act = t in sel
+        rr(d, (x, 336, x + wd, 366), fill=(c["accent"] if (hi and act) else c["chip"]),
+           outline=c["line"], r=14)
+        col = c["htext"] if (hi and act) else c["ink"]
+        txt(d, (x + wd / 2, 351), t, 11, True, col, anchor="mm")
+        x += wd + 8
+
+    rr(d, (30, 378, 970, 522), fill=c["card"], outline=c["line"], r=8)
+    txt(d, (44, 388), "Precio y cantidad por talla", 12, True, c["muted"])
+    txt(d, (48, 414), "Talla", 11, True, c["muted"])
+    txt(d, (220, 414), "Precio (S/)", 11, True, c["muted"])
+    txt(d, (460, 414), "Cantidad", 11, True, c["muted"])
+    filas = [("4", "45.00", "6"), ("6", "45.00", "6"), ("8", "48.00", "4"),
+             ("10", "48.00", "3"), ("12", "50.00", "2")]
+    for j, (t, p, q) in enumerate(filas):
+        yy = 438 + j * 16
+        txt(d, (48, yy), t, 11, fill=c["ink"])
+        txt(d, (220, yy), p, 11, fill=c["ink"])
+        txt(d, (460, yy), q, 11, fill=c["ink"])
+
+    txt(d, (30, 540), "Fotos (1 a 3) — se guardan al crear", 12, True, c["ink"])
     for i in range(3):
-        img_placeholder(d, (30 + i * 96, 544, 116 + i * 96, 634), c, hi)
-    button(d, (760, 600, 970, 644), "Crear y subir fotos", c, hi)
+        img_placeholder(d, (30 + i * 96, 566, 116 + i * 96, 650), c, hi)
+    button(d, (740, 600, 970, 644), "Crear y subir fotos", c, hi)
     return img
 
 
@@ -474,11 +559,76 @@ def mock_reportes(hi):
     return img
 
 
+def mock_editar(hi):
+    img, d, c = base_screen("Editar producto", hi)
+    txt(d, (30, 126), "Tallas / variantes (stock y precio)", 12, True, c["muted"])
+    filas = [("Talla 4", "NINA-04", "S/ 45.00", "Stock: 6"),
+             ("Talla 6", "NINA-06", "S/ 45.00", "Stock: 6"),
+             ("Talla 8", "NINA-08", "S/ 48.00", "Stock: 4")]
+    for j, (t, sku, pr, st) in enumerate(filas):
+        y = 146 + j * 62
+        rr(d, (30, y, 970, y + 54), fill=c["card"], outline=c["line"], r=8)
+        txt(d, (44, y + 8), t, 13, True, c["ink"])
+        txt(d, (44, y + 28), sku, 11, fill=c["muted"])
+        txt(d, (700, y + 10), pr, 13, True, c["ink"], anchor="ra")
+        txt(d, (700, y + 30), st, 11, fill=c["muted"], anchor="ra")
+        rr(d, (890, y + 12, 956, y + 42), fill=c["chip"], outline=c["line"], r=6)
+        txt(d, (923, y + 27), "lapiz", 10, fill=c["ink"], anchor="mm")
+
+    txt(d, (30, 350), "Fotos (la primera se muestra en el catálogo)", 12, True, c["muted"])
+    for i in range(3):
+        x = 30 + i * 150
+        rr(d, (x, 372, x + 138, 494), fill=c["img"], outline=c["line"], r=8)
+        if i == 0:
+            rr(d, (x + 6, 378, x + 80, 396), fill=(c["accent"] if hi else c["chip"]), r=4)
+            txt(d, (x + 12, 381), "Principal", 9, fill=(c["htext"] if hi else c["ink"]))
+        rr(d, (x + 112, 378, x + 132, 398), fill=c["card"], outline=c["line"], r=10)
+        txt(d, (x + 122, 388), "x", 10, fill=c["ink"], anchor="mm")
+        rr(d, (x + 6, 468, x + 32, 488), fill=c["card"], outline=c["line"], r=4)
+        txt(d, (x + 19, 478), "<", 10, fill=c["ink"], anchor="mm")
+        rr(d, (x + 106, 468, x + 132, 488), fill=c["card"], outline=c["line"], r=4)
+        txt(d, (x + 119, 478), ">", 10, fill=c["ink"], anchor="mm")
+    return img
+
+
+def mock_usuarios(hi):
+    c = pal(hi)
+    img = Image.new("RGB", (W, H), c["bg"])
+    d = ImageDraw.Draw(img)
+    rr(d, (0, 0, 460, H), fill=c["card"], outline=c["line"], w=2)
+    rr(d, (0, 0, 460, 56), fill=c["header"])
+    txt(d, (20, 28), "Usuarios y roles", 18, True, c["htext"], anchor="lm")
+    txt(d, (432, 28), "x", 14, True, c["htext"], anchor="rm")
+    txt(d, (20, 82), "Usuarios", 13, True, c["ink"])
+    txt(d, (120, 82), "Roles", 13, fill=c["muted"])
+    users = [("yesin.camarena", "admin", "Activo"),
+             ("boris.camarena", "supervisor", "Activo"),
+             ("rosa.elvira", "vendedor", "Activo")]
+    for j, (n, r, e) in enumerate(users):
+        y = 108 + j * 74
+        rr(d, (16, y, 444, y + 62), fill=c["card"], outline=c["line"], r=8)
+        txt(d, (28, y + 8), n, 13, True, c["ink"])
+        txt(d, (28, y + 28), n + "@gmail.com", 10, fill=c["muted"])
+        rr(d, (28, y + 44, 120, y + 60), fill=c["chip"], r=4)
+        txt(d, (34, y + 47), r, 10, fill=c["ink"])
+        txt(d, (360, y + 10), e, 10, fill=c["ok"], anchor="ra")
+    txt(d, (500, 90), "Panel lateral (drawer)", 22, True, c["ink"])
+    txt(d, (500, 130), "Se abre con el boton hamburguesa ☰ (solo admin).", 13, fill=c["muted"])
+    txt(d, (500, 164), "• Pestaña Usuarios: crear/editar, activar o", 13, fill=c["ink"])
+    txt(d, (500, 190), "  desactivar y eliminar (baja logica).", 13, fill=c["ink"])
+    txt(d, (500, 216), "• Pestaña Roles: permisos por menu", 13, fill=c["ink"])
+    txt(d, (500, 242), "  (catalogo / ventas / reportes / usuarios).", 13, fill=c["ink"])
+    txt(d, (500, 280), "Roles base: admin, supervisor, vendedor.", 13, True, c["ink"])
+    return img
+
+
 MOCKUPS = {
     "login": ("Login", mock_login),
     "catalogo": ("Catálogo", mock_catalogo),
     "detalle": ("Detalle de producto", mock_detalle),
     "nuevo": ("Alta de producto", mock_nuevo),
+    "editar": ("Editar producto (stock, precio y fotos)", mock_editar),
+    "usuarios": ("Usuarios y roles", mock_usuarios),
     "ventas": ("Ventas", mock_ventas),
     "reportes": ("Reportes", mock_reportes),
 }
@@ -627,10 +777,11 @@ def construir(mockups, diags):
     doc.add_heading("1.1 Contexto", level=2)
     doc.add_paragraph(
         "El negocio de alquiler y venta de disfraces maneja un catálogo amplio (más de "
-        "2,000 fotografías) organizado por categorías temáticas (superhéroes, profesiones, "
-        "series, películas, Halloween), géneros (niño, niña, hombre, mujer, unisex), tallas y "
-        "calidades de tela. El control de este inventario se realizaba de forma manual, lo que "
-        "dificultaba conocer el stock real, registrar ventas y mantener las fotografías al día."
+        "2,000 fotografías) organizado por 8 categorías temáticas (Halloween, Fantasía Series "
+        "Películas, Profesiones, Canción Criolla, Princesas, Animales, Accesorios y Anime "
+        "Cosplay), géneros (niño, niña, hombre, mujer, unisex), tallas y calidades de tela. El "
+        "control de este inventario se realizaba de forma manual, lo que dificultaba conocer el "
+        "stock real, registrar ventas y mantener las fotografías al día."
     )
     doc.add_heading("1.2 Problema", level=2)
     doc.add_paragraph(
@@ -659,9 +810,14 @@ def construir(mockups, diags):
     for o in [
         "Centralizar el catálogo de disfraces con fotografías, categorías, tallas y géneros.",
         "Automatizar el descuento de stock al registrar una venta mediante disparadores (triggers).",
-        "Permitir la subida de fotografías desde el móvil con compresión automática.",
-        "Ofrecer filtros de búsqueda por nombre, categoría y género.",
+        "Permitir la subida de fotografías desde el móvil con compresión automática, así como "
+        "eliminarlas y reordenarlas (la primera es la que se muestra en el catálogo).",
+        "Ofrecer filtros de búsqueda por nombre, categoría y género, con autocompletado al escribir.",
+        "Permitir dar de alta un producto con varias tallas de una sola vez, definiendo precio y "
+        "cantidad por talla.",
         "Generar reportes de bajo stock, resumen de ventas y productos más vendidos.",
+        "Llevar un historial de movimientos de stock (entradas, salidas y ventas).",
+        "Gestionar usuarios y roles (admin, supervisor, vendedor) con permisos por menú.",
         "Actualizar la interfaz en tiempo real (Realtime) cuando cambia el stock.",
         "Desplegar el sistema en la nube con costo cero (GitHub Pages, Railway, Supabase).",
     ]:
@@ -671,8 +827,9 @@ def construir(mockups, diags):
     doc.add_heading("3. Alcances y limitaciones", level=1)
     doc.add_heading("3.1 Alcances", level=2)
     for a in [
-        "Gestión de productos, categorías, variantes, imágenes y ventas.",
-        "Autenticación de usuarios y control de acceso por RLS en la base de datos.",
+        "Gestión de productos, categorías, variantes (con precio por talla), imágenes y ventas.",
+        "Autenticación de usuarios, roles (admin, supervisor, vendedor) y control de acceso por RLS.",
+        "Historial de movimientos de stock (entradas, salidas, ventas y devoluciones).",
         "Carga masiva inicial de fotografías y metadatos con Python.",
         "Interfaz responsive (móvil y escritorio) con Tailwind CSS.",
         "Reportes operativos y actualización en vivo del inventario.",
@@ -793,13 +950,15 @@ def construir(mockups, diags):
         if (gender) items = items.filter(p => p.variants.some(v => v.gender === gender));'''))
     doc.add_heading("7.4 Triggers de base de datos (trazabilidad automática)", level=2)
     doc.add_paragraph(
-        "Cinco funciones PL/pgSQL garantizan la integridad y trazabilidad del inventario:"
+        "Siete funciones PL/pgSQL garantizan la integridad y trazabilidad del inventario:"
     )
     kv_table(doc, [
         ("restar_stock", "AFTER INSERT en sale_items", "Valida stock (con FOR UPDATE) y lo descuenta."),
         ("devolver_stock", "AFTER DELETE en sale_items", "Devuelve el stock al eliminar un ítem."),
         ("recalcular_total_venta", "AFTER I/U/D en sale_items", "Recalcula el monto total de la venta."),
-        ("handle_new_user", "AFTER INSERT en auth.users", "Crea el perfil del usuario automáticamente."),
+        ("registrar_movimiento_venta", "AFTER INSERT en sale_items", "Registra un movimiento 'Venta' (cantidad negativa)."),
+        ("registrar_movimiento_devolucion", "AFTER DELETE en sale_items", "Registra un movimiento 'Devolucion'."),
+        ("handle_new_user", "AFTER INSERT en auth.users", "Crea el perfil del usuario (rol vendedor, estado 1)."),
         ("set_updated_at", "BEFORE UPDATE", "Mantiene la marca de actualización (updated_at)."),
     ], ["Trigger", "Evento", "Propósito"])
     add_code(doc, textwrap.dedent('''\
@@ -827,7 +986,21 @@ def construir(mockups, diags):
         ("Resumen de ventas", "GET /reports/sales-summary", "sales.total_amount", "Totales por periodo"),
         ("Crear/editar producto", "POST/PUT /products", "products", "Producto guardado"),
         ("SKU automático", "POST /variants (generarSku)", "variants.sku", "SKU único generado"),
+        ("Alta con varias tallas y precio por talla", "POST /variants (x talla)", "variants.price, variants.stock_quantity", "Variantes creadas por talla"),
+        ("Eliminar/reordenar fotos", "PATCH/DELETE /products/:id/images", "product_images.position, is_primary", "Primera foto = portada del catálogo"),
+        ("Historial de movimientos", "GET /movements + triggers", "stock_movements", "Entradas, salidas y ventas trazadas"),
+        ("Gestión de usuarios y roles", "POST/PUT/DELETE /usuarios y /roles", "profiles, rol", "Alta, roles y permisos"),
     ], ["Requisito / caso de uso", "Componente", "Dato trazado", "Resultado esperado"])
+
+    doc.add_heading("7.6 Historial de movimientos de stock (kardex)", level=2)
+    doc.add_paragraph(
+        "Cada cambio de stock queda registrado en la tabla stock_movements con el tipo de "
+        "movimiento (Entrada, Salida, Venta, Devolucion, Ajuste), la cantidad con signo "
+        "(positivo ingresa, negativo sale), la fecha y una referencia (por ejemplo el id de la "
+        "venta). Las ventas y devoluciones se registran automáticamente con triggers; las "
+        "entradas y salidas manuales (edición de stock) las registra el backend."
+    )
+    imagen(doc, diags.get("movimientos"), 6.3, "Diagrama 7.6 — Registro de movimientos de stock")
 
     # --- 8. Modelo de datos ---
     doc.add_heading("8. Modelo de datos", level=1)
@@ -835,14 +1008,16 @@ def construir(mockups, diags):
     imagen(doc, diags.get("er"), 6.3, "Diagrama 8.1 — Modelo Entidad-Relación")
     doc.add_heading("8.2 Diccionario de tablas", level=2)
     kv_table(doc, [
-        ("categories", "id (UUID, PK), name, slug (UK), parent_id (FK), created_at", "Jerarquía de temáticas"),
+        ("categories", "id (UUID, PK), name, slug (UK), parent_id (FK), created_at", "8 categorías temáticas"),
         ("products", "id (UUID, PK), name, description, image_url, price, category_id (FK), active, timestamps", "Cada disfraz"),
-        ("variants", "id (UUID, PK), product_id (FK), size, gender, fabric_quality, sku (UK), stock_quantity", "Talla + género + tela + stock"),
-        ("product_images", "id (UUID, PK), product_id (FK), image_url, is_primary, position", "Fotografías"),
+        ("variants", "id (UUID, PK), product_id (FK), size, gender, fabric_quality, sku (UK), stock_quantity, price", "Talla + género + tela + stock + precio por talla"),
+        ("product_images", "id (UUID, PK), product_id (FK), image_url, is_primary, position", "Fotografías (orden y principal)"),
+        ("stock_movements", "id (UUID, PK), variant_id (FK), tipo_movimiento, cantidad_movimiento, fecha_movimiento, referencia, user_id", "Kardex: entradas, salidas y ventas"),
+        ("rol", "id (UUID, PK), nombre (UK), descripcion, permisos (JSONB)", "Roles y permisos por menú"),
+        ("profiles", "id (UUID, PK = auth.users), email, full_name, role (FK a rol), estado, timestamps", "Usuarios del sistema (rol y estado)"),
         ("tags / product_tags", "id (UUID, PK) / (product_id, tag_id)", "Etiquetas flexibles"),
         ("sales", "id (UUID, PK), sale_date, total_amount, customer, user_id (FK)", "Ventas"),
         ("sale_items", "id (UUID, PK), sale_id (FK), variant_id (FK), quantity, unit_price", "Detalle de venta"),
-        ("profiles", "id (UUID, PK = auth.users), email, full_name, role", "Usuarios del sistema"),
     ], ["Tabla", "Campos principales", "Descripción"])
 
     # --- 9. Backend ---
@@ -855,7 +1030,7 @@ def construir(mockups, diags):
         ├── src/lib/supabase.js          Cliente admin (service/secret key)
         ├── src/middlewares/auth.js      requireAuth / requireAdmin (JWT de Supabase)
         ├── src/schemas/*.js             Validacion con zod
-        ├── src/services/*.js            Logica de negocio (product/variant/sale/report)
+        ├── src/services/*.js            Logica de negocio (product/variant/sale/report/movement/usuario/rol)
         └── src/routes/*.js              Endpoints REST'''))
     doc.add_heading("9.2 Endpoints", level=2)
     kv_table(doc, [
@@ -864,12 +1039,16 @@ def construir(mockups, diags):
         ("GET", "/products/:id", "No", "Detalle con imágenes y variantes"),
         ("POST/PUT/DELETE", "/products(/:id)", "Sí", "Alta, edición y baja de productos"),
         ("POST", "/products/:id/images", "Sí", "Subir imagen (sharp) a Storage"),
+        ("PATCH/DELETE", "/products/:id/images", "Sí", "Reordenar (primera = portada) o eliminar imágenes"),
         ("GET", "/variants", "No", "Variantes (filtros product_id, gender, low_stock)"),
-        ("POST/PATCH", "/variants(/:id)", "Sí", "Crear/ajustar variante (SKU automático)"),
+        ("POST/PATCH", "/variants(/:id)", "Sí", "Crear/ajustar variante (SKU automático, precio por talla)"),
         ("GET/POST", "/sales", "Sí", "Listar/registrar ventas"),
+        ("GET", "/movements", "Sí", "Historial de movimientos de stock (kardex)"),
         ("GET", "/reports/low-stock", "Sí", "Reporte de bajo stock"),
         ("GET", "/reports/sales-summary", "Sí", "Resumen de ventas"),
         ("GET", "/reports/top-products", "Sí", "Productos más vendidos"),
+        ("GET/POST/PUT/DELETE", "/usuarios(/:id)", "Sí (admin para mutar)", "Gestión de usuarios (perfiles)"),
+        ("GET/POST/PUT/DELETE", "/roles(/:id)", "Sí (admin para mutar)", "Gestión de roles y permisos"),
     ], ["Método", "Ruta", "Auth", "Descripción"])
     doc.add_heading("9.3 Funciones principales", level=2)
     doc.add_paragraph("Autenticación (JWT de Supabase) y control por rol:")
@@ -919,10 +1098,12 @@ def construir(mockups, diags):
         ├── lib/supabase.js            Cliente Supabase (anon key)
         ├── lib/api.js                 Cliente del backend (adjunta el JWT)
         ├── lib/auth.svelte.js         Estado de sesión (runes)
+        ├── lib/perfil.svelte.js       Perfil, rol y permisos (filtra los menús)
         ├── lib/router.svelte.js       Router por hash (compatible GitHub Pages)
-        ├── lib/components/Nav.svelte         Barra de navegación
-        ├── lib/components/ImagePicker.svelte Cámara/galería + compresión + preview
-        ├── lib/components/Lightbox.svelte    Zoom de imágenes
+        ├── lib/components/Nav.svelte            Barra de navegación responsive
+        ├── lib/components/UsuariosDrawer.svelte Panel de usuarios y roles (admin)
+        ├── lib/components/ImagePicker.svelte    Cámara/galería + compresión + preview
+        ├── lib/components/Lightbox.svelte       Zoom de imágenes
         └── routes/*.svelte            Login, Catalogo, Detalle, Editar, Ventas, Reportes'''))
     doc.add_heading("10.2 Rutas y vistas", level=2)
     kv_table(doc, [
@@ -939,6 +1120,8 @@ def construir(mockups, diags):
         ("Lightbox", "Visor a pantalla completa con zoom (100%–400%) para observar la imagen sin recorte."),
         ("api.js", "Centraliza las llamadas al backend añadiendo el token JWT de Supabase."),
         ("auth.svelte.js", "Maneja la sesión con Supabase Auth y expone estado reactivo."),
+        ("perfil.svelte.js", "Carga el perfil (rol y permisos) y filtra los menús según el rol."),
+        ("UsuariosDrawer", "Panel lateral (admin) con pestañas Usuarios y Roles; crea, activa/desactiva y elimina."),
         ("router.svelte.js", "Router por hash: funciona en GitHub Pages sin configuración de servidor."),
     ]:
         p = doc.add_paragraph()
@@ -972,6 +1155,8 @@ def construir(mockups, diags):
         "Variables sensibles almacenadas en archivos .env excluidos del repositorio (.gitignore).",
         "Bucket de Storage público solo para lectura; escritura restringida a usuarios autenticados.",
         "Validación de datos con zod en todos los endpoints.",
+        "Roles y permisos (admin, supervisor, vendedor): los menús se filtran por permisos en el frontend; el backend restringe la gestión de usuarios y roles a admin (requireAdmin).",
+        "Los usuarios con estado inactivo (estado = 0) son bloqueados por requireAuth aunque tengan un token válido.",
     ]:
         bullet(doc, s)
 
@@ -985,23 +1170,83 @@ def construir(mockups, diags):
         ("CI/CD", "GitHub Actions", "deploy-frontend.yml", "Build y publicación del frontend"),
     ], ["Componente", "Plataforma", "URL / detalle", "Notas"])
 
-    # --- 14. Manual de uso ---
-    doc.add_heading("14. Manual de uso", level=1)
+    # --- 14. Módulo de usuarios y roles ---
+    doc.add_heading("14. Módulo de usuarios y roles", level=1)
+    doc.add_paragraph(
+        "La gestión de accesos se apoya en Supabase Auth (identidad y contraseña) y en la tabla "
+        "profiles (rol y estado). El administrador abre el panel desde el botón de menú (☰) del "
+        "navbar: un cajón lateral con dos pestañas, Usuarios y Roles."
+    )
+    doc.add_heading("14.1 Roles y permisos", level=2)
+    doc.add_paragraph(
+        "Cada rol define qué menús ve el usuario. Los permisos se guardan en la columna roles.permisos:"
+    )
+    kv_table(doc, [
+        ("admin", "catalogo, ventas, reportes, usuarios", "Acceso total, incluida la gestión de usuarios y roles."),
+        ("supervisor", "catalogo, ventas, reportes", "Opera el inventario y ve reportes; no gestiona usuarios."),
+        ("vendedor", "catalogo, ventas", "Solo catálogo y registro de ventas."),
+    ], ["Rol", "Permisos (menús)", "Descripción"])
+    doc.add_paragraph(
+        "Al iniciar sesión, el frontend carga el perfil y construye el menú solo con los permisos "
+        "del rol. En el backend, requireAuth valida el token y bloquea a los usuarios inactivos; "
+        "requireAdmin protege la gestión de usuarios y roles."
+    )
+    doc.add_paragraph("Control de acceso en el backend:")
+    add_code(doc, textwrap.dedent('''\
+        export async function requireAdmin(request) {
+          await requireAuth(request);                 // valida token y estado activo
+          if (request.user?.role !== 'admin') {       // rol leido de profiles -> rol
+            throw new AppError('Se requiere rol administrador', 403);
+          }
+        }'''))
+    doc.add_paragraph(
+        "En la pestaña Usuarios se crean cuentas (Supabase Auth + registro en profiles), se asignan "
+        "roles y se activan/desactivan o eliminan (baja lógica: estado = 0 y fecha_eliminacion). En "
+        "la pestaña Roles se administran los roles y sus permisos por menú."
+    )
+
+    # --- 15. Historial de movimientos de stock ---
+    doc.add_heading("15. Historial de movimientos de stock", level=1)
+    doc.add_paragraph(
+        "El sistema lleva un kardex de cada variante. Toda venta o devolución genera de forma "
+        "automática un movimiento mediante triggers; las entradas y salidas manuales (al editar el "
+        "stock de una variante) las registra el backend. El detalle de cada producto muestra su "
+        "sección 'Movimientos de stock' con el tipo, la cantidad, la fecha y la referencia."
+    )
+    kv_table(doc, [
+        ("Entrada", "Ingreso de mercadería", "Cantidad positiva"),
+        ("Salida", "Retiro o merma", "Cantidad negativa"),
+        ("Venta", "Automático al registrar una venta", "Cantidad negativa"),
+        ("Devolucion", "Automático al eliminar un ítem de venta", "Cantidad positiva"),
+        ("Ajuste", "Corrección de inventario", "Positiva o negativa"),
+    ], ["Tipo", "Origen", "Cantidad"])
+    doc.add_paragraph(
+        "El endpoint GET /movements devuelve el historial (filtrable por variante). Los triggers "
+        "registrar_movimiento_venta y registrar_movimiento_devolucion insertan el movimiento al "
+        "mismo tiempo que descuentan o devuelven el stock, garantizando que el stock y el kardex "
+        "siempre coincidan."
+    )
+
+    # --- 16. Manual de uso ---
+    doc.add_heading("16. Manual de uso", level=1)
     pasos = [
         "Iniciar sesión con el correo y contraseña asignados.",
-        "En el Catálogo, buscar por nombre o filtrar por categoría/género. Usar 'Limpiar filtros' para reiniciar.",
-        "Pulsar '+ Nuevo producto' para dar de alta: completar nombre, precio, categoría y categoría; elegir talla, género, cantidad y (opcional) la calidad de la tela.",
+        "En el Catálogo, buscar por nombre con autocompletado o filtrar por categoría/género. Usar 'Limpiar filtros' para reiniciar.",
+        "Pulsar '+ Nuevo producto' para dar de alta: completar nombre, precio base, categoría, género y (opcional) la tela.",
+        "Elegir una o varias tallas y, en la tabla Precio/Cantidad por talla, fijar el precio y la cantidad de cada una.",
         "Añadir de 1 a 3 fotos con 'Tomar foto' (cámara) o 'Desde galería'. Se comprimen automáticamente.",
-        "Guardar; el sistema crea el producto, su variante con SKU automático y sube las fotos.",
-        "En el Detalle, usar '🔍 Ampliar' para ver la imagen completa con zoom.",
+        "Guardar; el sistema crea el producto, una variante por talla (con SKU automático) y sube las fotos.",
+        "En el Detalle, usar '🔍 Ampliar' para ver la imagen completa y consultar las variantes y el historial de movimientos.",
+        "En Editar, ajustar el stock de una talla y eliminar o reordenar fotos (la primera es la portada del catálogo).",
         "En Ventas, seleccionar la variante, indicar cantidad, agregarla al carrito y registrar la venta (el stock se descuenta solo).",
         "En Reportes, consultar bajo stock, resumen de ventas y productos más vendidos.",
+        "Un administrador puede abrir el panel ☰ para gestionar usuarios y roles.",
     ]
     for i, p in enumerate(pasos, 1):
         bullet(doc, f"{i}. {p}")
 
-    # --- 15. Anexos ---
-    doc.add_heading("15. Anexos", level=1)
+    # --- 17. Anexos ---
+    doc.add_heading("17. Anexos", level=1)
     doc.add_heading("Anexo A. Guion SQL de la base de datos", level=2)
     doc.add_paragraph("Script completo ejecutado en Supabase (db/supabase_schema.sql):")
     sql_path = ROOT / "db" / "supabase_schema.sql"
@@ -1048,9 +1293,21 @@ def construir(mockups, diags):
         "Aplicación (GitHub Pages): https://disfracesrosaelvira.github.io/productos/",
         "Backend (Railway): https://productos-production-8443.up.railway.app",
         "Diagramas interactivos: DiagramasArquitecturaProyecto.html (incluido en el proyecto).",
-        "Mockups interactivos: MockupInteractivoHTML.html (incluido en el proyecto).",
+        "Migraciones de base de datos: db/migrations/ (aplicadas en el SQL Editor de Supabase).",
     ]:
         bullet(doc, e)
+
+    doc.add_heading("Anexo F. Migraciones SQL", level=2)
+    doc.add_paragraph(
+        "Además del esquema base (Anexo A), las mejoras se aplicaron con migraciones versionadas "
+        "en db/migrations/. Se ejecutan en el SQL Editor de Supabase, en orden:"
+    )
+    kv_table(doc, [
+        ("20261008000001", "stock_movements", "Crea el kardex y los triggers de venta/devolución."),
+        ("20261008000002", "usuarios_roles", "Crea la tabla usuario y la base del módulo de roles."),
+        ("20261008000003", "unificar_usuarios_profiles", "Reescribe profiles (rol, estado) y migra las cuentas."),
+        ("20261008000004", "variants_precio", "Añade variants.price (precio por talla)."),
+    ], ["Versión", "Nombre", "Contenido"])
 
     doc.save(OUT)
     return OUT
