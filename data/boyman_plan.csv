@@ -1,0 +1,44 @@
+﻿num;carpeta;nombre;decision;coincide_con;motivo
+1;1.Bugui Bugui polar 60 soles (gorra,enterizo,guantes, luces) Talla 4-8;Bugui Bugui;OMITIR;Bugui Bugui polar;mismo modelo, mas detalles (0.79)
+2;2.Capitan américa 45 soles (escudo,chaqueta,pantalón) Talla 4-8;Capitan América;OMITIR;Capitán América;coincide (1.00)
+3;3.Gekko polinan 50 soles (eneterizo, mascara,cola) Talla 4-8;Gekko;OMITIR;Gekko polinan;mismo modelo, mas detalles (0.56)
+4;4.Superman bordado 40 soles (capa,pantalón,chaqueta,cinturón,botas) Talla 4-8;Superman;OMITIR;Superman bordado;mismo modelo, mas detalles (0.67)
+5;5.Spiderman sublimado (chaqueta,pantalón,cinturón,botas,mascara) Talla 4-8;Spiderman;OMITIR;Spiderman sublimado;mismo modelo, mas detalles (0.64)
+6;6.Astronauta_polinan;Astronauta;NUEVO;;
+7;7.Spiderman Polinan niño hombre 50 soles (enterizo,botas,mascara) Talla 4-8;Spiderman;OMITIR;Spiderman sublimado;mismo modelo, mas detalles (0.64)
+8;8.Pirata sermat(niño hombre);Pirata;NUEVO;;
+9;9.Batman Polistress (niño poliestres);Batman;OMITIR;Batman Poliman;mismo modelo, mas detalles (0.60)
+10;10.Spiderman red black polinan(niño hombre);Spiderman Red Black;NUEVO;;
+11;11.Flash (niño hombre);Flash;OMITIR;Flash;coincide (1.00)
+12;12.Chapulin colorado (niño hombre);Chapulin Colorado;OMITIR;Chapulin Colorado;coincide (1.00)
+13;13.Perro policia Paw patrol niño hombre 50 soles (mochila,gorro con orejas,polo,chaqueta,pantalon) Talla 4-8;Perro Policia Paw Patrol;NUEVO;;
+14;14.Ryder Paw Patrol niño hombre 45 soles (chaqueta bordad,polo larga,pantalon) Talla 4-8;Ryder Paw Patrol;NUEVO;;
+15;15.Sonic polinan 50 soles (guantes, enterizo,cabeza con cola) Talla 4-8;Sonic;OMITIR;Sonic;coincide (1.00)
+16;16.Spiderman polinan 50 soles (mascara,enterizo) Talla 4-8;Spiderman;OMITIR;Spiderman sublimado;mismo modelo, mas detalles (0.64)
+17;17.Payaso IT polinan 50 soles (Chaqueta,pantalón,mascara) Talla 4-8;Payaso IT;OMITIR;Payaso IT;coincide (1.00)
+18;18.Mario Bross 45 soles (pantalón, gorro, guantes) Talla 4-8;Mario Bross;OMITIR;Mario Bros;coincide (0.95)
+19;19.Planta vs Sombie 50 soles (Saco,corbata,pantalón,camisa,mascara) Talla 4-8;Planta vs Sombie;OMITIR;Planta vs Zombi;coincide (0.90)
+20;20.Batman Polinan 45 soles (mascara,capa,cinturón);Batman;OMITIR;Batman Poliman;mismo modelo, mas detalles (0.60)
+21;21.Robin Polistress (niño hombre);Robin;NUEVO;;
+22;22.Chavo del 8 (niño hombre);Chavo del 8;NUEVO;;
+23;23.Negroide (niño hombre);Negroide;NUEVO;;
+24;24.Mariachi(niño hombre);Mariachi;OMITIR;Mariachi Niña;mismo modelo, mas detalles (0.76)
+25;25.Calabera niño hombre 30 soles (polo,mascara,pantalon)Talla 4-talla8;Calabera;NUEVO;;
+26;26.Capitan américa poliestres;Capitan América;OMITIR;Capitán América;coincide (1.00)
+27;27.cientifico;Cientifico;NUEVO;;
+28;28.dentista sermat;Dentista;NUEVO;;
+29;29.duende;Duende;NUEVO;;
+30;30.hulk;Hulk;NUEVO;;
+31;31.Irospiderman polinan;Irospiderman;OMITIR;;sin fotos propias (duplicadas)
+32;32.juego_calamar polinan;Juego Calamar;OMITIR;Juego de calamar polinan;mismo modelo, mas detalles (0.70)
+33;33.Luigui Nintendo;Luigui Nintendo;OMITIR;Luigui;mismo modelo, mas detalles (0.57)
+34;34.minium;Minium;NUEVO;;
+35;35.naruto;Naruto;NUEVO;;
+36;36.Ñoño 45 soles (niño hombre);Ñoño;NUEVO;;
+37;37.payaso clasico;Payaso Clasico;NUEVO;;
+38;38.Power ranger;Power Ranger;NUEVO;;
+39;39.Principe_rey_clasico;Principe Rey Clasico;NUEVO;;
+40;40.Star Wars niño hombre 50 soles (no hay);Star Wars;OMITIR;;carpeta marcada '(no hay)'
+41;41.Tortuga 35 soles (niño hombre) Talla 4-8;Tortuga;NUEVO;;
+42;42.Transformers;Transformers;NUEVO;;
+43;43.vaquero Woody toy story;Vaquero Woody Toy Story;NUEVO;;
