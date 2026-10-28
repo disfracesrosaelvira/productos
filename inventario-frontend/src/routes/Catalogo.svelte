@@ -17,12 +17,22 @@
   let mostrarSugerencias = $state(false)
   let indiceActivo = $state(-1)
 
-  const sugerencias = $derived(
+  const normalizar = (t) =>
+    (t ?? '')
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+
+  const productosFiltrados = $derived(
     q.trim() === ''
-      ? []
-      : productos
-          .filter((p) => p.name.toLowerCase().includes(q.trim().toLowerCase()))
-          .slice(0, 8),
+      ? productos
+      : productos.filter((p) => normalizar(p.name).includes(normalizar(q))),
+  )
+
+  const sugerencias = $derived(
+    q.trim() === '' ? [] : productosFiltrados.slice(0, 8),
   )
 
   const totalStock = (p) => (p.variants ?? []).reduce((s, v) => s + (v.stock_quantity || 0), 0)
@@ -37,8 +47,24 @@
     cargando = true
     error = ''
     try {
-      const res = await api.listarProductos({ q, category: categoria, gender: genero, pageSize: 100 })
-      productos = res.data
+      // Se pagina hasta traer todo (el backend limita pageSize a 100) y el
+      // filtro por nombre se hace local, sin distinguir tildes ni ñ.
+      let page = 1
+      let todos = []
+      let total = Infinity
+      while (todos.length < total) {
+        const res = await api.listarProductos({
+          category: categoria,
+          gender: genero,
+          pageSize: 100,
+          page,
+        })
+        total = res.total
+        todos = todos.concat(res.data)
+        if (!res.data.length) break
+        page += 1
+      }
+      productos = todos
     } catch (e) {
       error = e.message
     } finally {
@@ -49,7 +75,7 @@
   function buscar(evento) {
     evento.preventDefault()
     mostrarSugerencias = false
-    cargar()
+    indiceActivo = -1
   }
 
   function limpiar() {
@@ -182,11 +208,11 @@
 
   {#if cargando}
     <p class="text-slate-500">Cargando…</p>
-  {:else if productos.length === 0}
+  {:else if productosFiltrados.length === 0}
     <p class="text-slate-500">No hay productos.</p>
   {:else}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-      {#each productos as p (p.id)}
+      {#each productosFiltrados as p (p.id)}
         <button
           class="bg-white rounded-lg shadow overflow-hidden text-left hover:shadow-md transition"
           onclick={() => navegar(`/producto/${p.id}`)}>
