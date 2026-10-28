@@ -108,6 +108,35 @@
   usuarios/roles), anexo de migraciones y nav con hamburguesa.
 - Regenerado `docs/Documentacion_Sistema_Inventario_Disfraces.docx`.
 
+### 14. Fondo blanco de fotos (rembg) — 1. Boy_man
+- Se instalaron `rembg`, `onnxruntime` y `pillow-heif` (reconocen HEIC).
+- 43 carpetas-modelo (1–43) dentro de `D:\Google fotos disfraces\1. Boy_man`.
+- Se generaron hasta **3 fotos con fondo blanco por carpeta** (JPG, máx. 2000 px) en
+  `D:\Google fotos disfraces\_fondoblanco\1. Boy_man\<carpeta>\`, con `_manifest.csv`
+  (precio y tela de referencia). Los originales no se tocaron.
+- **Dedupe global (md5):** las fotos repetidas entre carpetas se asignan a la de menor número.
+  5↔7, 7↔16 y 16↔31 compartían fotos; **31 (Irospiderman)** quedó sin fotos propias → omitida.
+- 113 fotos generadas; con menos de 3 fotos por falta de originales: 23, 26, 27, 32, 36, 37, 38, 41.
+- Scripts usados (en temp): `C:\Users\YESIN\AppData\Local\Temp\opencode\fondo_blanco_boyman.py`
+  y `plan_boyman.py`.
+
+### 15. Carga de 22 productos nuevos (1. Boy_man)
+- Plan: `data/boyman_plan.csv` (43 carpetas → 22 NUEVO / 21 OMITIR) y `data/metadatos_boyman.csv`.
+- Reglas: nombre = primeras palabras (sin tela, precio, talla ni detalles); precio de la carpeta o
+  **50**; tela inferida o **Polinan**; tallas **4;6;8**; stock **3** por talla; categorías asignadas.
+- Cargados con `scripts/cargar_supabase.py` (comprime a **WebP ≤1600 px, q80** → 31–58 KB por foto).
+- Catálogo pasó de **124 → 146** productos (66 variantes y 56 fotos nuevas).
+- Omitidos por ya existir: Bugui Bugui, Capitán América, Gekko, Superman, Spiderman, Batman, Flash,
+  Chapulín, Sonic, Payaso IT, Mario Bros, Planta vs Zombi, Mariachi, Juego de Calamar, Luigui, etc.
+- `data/catalogo_actual.csv`: lista de referencia de los 146 productos (categoría, precio, var, img).
+
+### 16. Fix del buscador del catálogo
+- Síntoma: al tipear "Ñoño", "Power Ranger", "Principe", etc. no salían sugerencias.
+- Causa: el autocompletado filtraba **solo los 100 productos cargados** (había 146) y era sensible a
+  tildes/ñ. El backend sí buscaba bien (probado en producción).
+- Fix en `Catalogo.svelte`: **carga todas las páginas** y filtra localmente **sin tildes/ñ** (NFD),
+  tanto en sugerencias como en la grilla. Build OK; el frontend se despliega solo con el push.
+
 ### Nota: expiración de token
 - Síntoma: mensajes rojos "token inválido o expirado" en Usuarios/Roles, Ventas y Reportes.
 - Causa: la sesión del navegador tenía el token vencido. **Solución:** cerrar sesión y reingresar.
@@ -160,6 +189,10 @@
   - `d61372b` historial (genero en catalogo)
   - `68dd210` eliminar y reordenar fotos en editar producto
   - `84722e5` documentacion del sistema actualizada (roles, movimientos, tallas con precio, fotos)
+  - `77d1b64` historial para retomar (estado y siguiente paso)
+  - `fc5768e` plan y metadatos de carga (22 productos de 1. Boy_man)
+  - `1e876fc` fix buscador del catalogo (todos los productos, sin tildes/ñ)
+  - `abbd634` lista de referencia del catalogo (146 productos)
 - **Deploy frontend:** `push` a `main` → GitHub Actions publica en GitHub Pages (solo si cambia
   `inventario-frontend/**` o el workflow).
 - **Deploy backend (Railway):** NO es automatico. Hay que redesplegar manualmente en Railway
@@ -170,10 +203,15 @@
 ---
 
 ## Estado actual / siguiente paso al regresar
-- Todo el trabajo está **commiteado y pusheado** a `main` (último commit: `84722e5`).
+- Todo el trabajo está **commiteado y pusheado** a `main` (último commit: `abbd634`).
+- Catálogo con **146 productos**; 22 cargados desde `1. Boy_man`.
 - Documentación Word regenerada: `docs/Documentacion_Sistema_Inventario_Disfraces.docx`.
-- **Único pendiente accionable:** redesplegar el **backend en Railway** para que funcionen
+- Buscador del catálogo corregido (carga todos y filtra sin tildes/ñ).
+- **Pendiente accionable:** redesplegar el **backend en Railway** para que funcionen
   `PATCH/DELETE /products/:id/images` (reordenar/eliminar fotos); en producción aún dan 404.
+- **Siguiente grupo previsto:** repetir el flujo (fondo blanco + dedupe + plan + carga) con los demás
+  grupos enumerados (`2.Girl_woman`, `3.Hombre_adulto`, `4.Mujer_adulta`, `5.Bebe_unisex`, etc.).
+- Hay **60 productos sin categoría** en el catálogo (pendiente de clasificar).
 
 ## Pendientes / notas al retomar
 - `docs/Documentacion_App_Backus_Merch.docx` y `scripts/generar_documento_merch.py`
