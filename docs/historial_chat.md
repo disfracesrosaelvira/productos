@@ -137,6 +137,38 @@
 - Fix en `Catalogo.svelte`: **carga todas las páginas** y filtra localmente **sin tildes/ñ** (NFD),
   tanto en sugerencias como en la grilla. Build OK; el frontend se despliega solo con el push.
 
+### 17. Catálogo público (modo lectura) en /publico
+- Segunda build del mismo frontend con `VITE_MODO_PUBLICO=true` y `VITE_BASE=/productos/publico/`.
+  El workflow compila el staff (`/productos/`) y el público, y copia el público a `dist/publico/`.
+- Público: arranca en **Catálogo sin login**; oculta “+ Nuevo producto”, Ventas, Reportes y usuarios;
+  el Detalle oculta Editar/Eliminar y Movimientos; botón **“Ingresar”** lleva al login del staff;
+  las rutas no permitidas redirigen al catálogo. No usa Realtime ni sesión (lee por el backend).
+- Config en `src/lib/config.js` (`MODO_PUBLICO`, `URL_STAFF`).
+- URL pública: **https://disfracesrosaelvira.github.io/productos/publico/**
+
+### 18. Endurecimiento de seguridad (gratuito)
+- Se detectó que **`stock_movements` era legible con la anon key** (451 filas). Se creó y aplicó
+  `db/migrations/20261029000001_rls_stock_movements.sql`: ahora devuelve **0 filas** sin sesión.
+- `GET /movements` ahora exige `requireAuth` (**401** sin token).
+- **Rate limit** 200 req/min por IP (`@fastify/rate-limit`).
+- **CORS** restringido a `https://disfracesrosaelvira.github.io` + `localhost` (bloquea otros orígenes).
+- **`noindex, nofollow`** + `robots.txt` (evita indexación; no bloquea el acceso).
+- Auditoría con anon key: `products`, `variants`, `product_images`, `categories` legibles (catálogo
+  público); `profiles`, `sales`, `sale_items`, `rol`, `usuario`, `stock_movements` = 0 filas.
+- Nota: la anon key es pública por diseño; la seguridad real es **RLS + JWT**. El catálogo sigue
+  visible con el link; para restringir el acceso habría que usar **Cloudflare Access** (gratis).
+- Backend redeployado en Railway (verificado: `/movements` 401, `x-ratelimit-limit: 200`, CORS OK,
+  `PATCH /products/:id/images` 401 → endpoint nuevo activo).
+
+### 19. Título del modo público
+- **Público:** “Disfraces Rosa Elvira”. **Interno:** “Sistema de Inventario de Disfraces”.
+- Se define en `vite.config.js` (`transformIndexHtml`) solo para el build público (sin parpadeo).
+
+### 20. Documentación Word (actualización)
+- `scripts/generar_documento.py`: estructura real de backend/frontend, sección **10.4 Búsqueda y
+  filtros del catálogo**, **Anexo G** (carga masiva y preparación de fotos). Regenerado el `.docx`.
+- (Pendiente commitear el `.docx` y el script.)
+
 ### Nota: expiración de token
 - Síntoma: mensajes rojos "token inválido o expirado" en Usuarios/Roles, Ventas y Reportes.
 - Causa: la sesión del navegador tenía el token vencido. **Solución:** cerrar sesión y reingresar.
@@ -193,27 +225,37 @@
   - `fc5768e` plan y metadatos de carga (22 productos de 1. Boy_man)
   - `1e876fc` fix buscador del catalogo (todos los productos, sin tildes/ñ)
   - `abbd634` lista de referencia del catalogo (146 productos)
-- **Deploy frontend:** `push` a `main` → GitHub Actions publica en GitHub Pages (solo si cambia
-  `inventario-frontend/**` o el workflow).
-- **Deploy backend (Railway):** NO es automatico. Hay que redesplegar manualmente en Railway
-  (ya se hizo para `f6efb7d`; verificado: `/products` devuelve `price` en variantes).
-  **Falta redesplegar** para `PATCH/DELETE /products/:id/images` (reordenar/eliminar fotos),
-  que en produccion aun devuelven 404.
+  - `0eb8d6c` historial (fondo blanco, carga 22 productos, fix buscador)
+  - `3e7c265` catalogo publico sin login en /publico (solo lectura)
+  - `410e182` exigir autenticacion en GET /movements
+  - `798f287` seguridad: noindex/robots, rate limit, CORS y RLS de stock_movements
+  - `4a63f59` titulo "Disfraces Rosa Elvira" en el modo publico
+- **Deploy frontend:** `push` a `main` → GitHub Actions publica en GitHub Pages (staff y público).
+- **Deploy backend (Railway):** NO es automatico. Ya se redesplegó y se verificó en producción:
+  `/movements` 401, rate limit activo (200/min), CORS restringido y `PATCH/DELETE /products/:id/images`
+  responden 401 (endpoint nuevo activo).
+- **URLs:** staff `https://disfracesrosaelvira.github.io/productos/` · público
+  `https://disfracesrosaelvira.github.io/productos/publico/`.
 
 ---
 
 ## Estado actual / siguiente paso al regresar
-- Todo el trabajo está **commiteado y pusheado** a `main` (último commit: `abbd634`).
+- Todo el trabajo está **commiteado y pusheado** a `main` (último commit de código: `4a63f59`;
+  este historial se commitea aparte).
 - Catálogo con **146 productos**; 22 cargados desde `1. Boy_man`.
-- Documentación Word regenerada: `docs/Documentacion_Sistema_Inventario_Disfraces.docx`.
+- **Modo público** activo y endurecido en `…/productos/publico/` (titulo "Disfraces Rosa Elvira").
+- **Seguridad verificada:** movimientos ya no legibles con anon key; rate limit, CORS, noindex y
+  `/movements` protegido. Backend redeployado en Railway.
 - Buscador del catálogo corregido (carga todos y filtra sin tildes/ñ).
-- **Pendiente accionable:** redesplegar el **backend en Railway** para que funcionen
-  `PATCH/DELETE /products/:id/images` (reordenar/eliminar fotos); en producción aún dan 404.
 - **Siguiente grupo previsto:** repetir el flujo (fondo blanco + dedupe + plan + carga) con los demás
   grupos enumerados (`2.Girl_woman`, `3.Hombre_adulto`, `4.Mujer_adulta`, `5.Bebe_unisex`, etc.).
 - Hay **60 productos sin categoría** en el catálogo (pendiente de clasificar).
+- Opcional: poner **Cloudflare Access** delante del público si se quiere restringir el acceso
+  (el catálogo hoy es visible con el link; `noindex` solo evita indexación).
 
 ## Pendientes / notas al retomar
+- `docs/Documentacion_Sistema_Inventario_Disfraces.docx` y `scripts/generar_documento.py`
+  quedaron **sin commitear** (actualización del Word con estructura, 10.4 y Anexo G).
 - `docs/Documentacion_App_Backus_Merch.docx` y `scripts/generar_documento_merch.py`
   quedaron **sin commitear** (son del proyecto merch, ajeno al inventario).
 - La tabla `usuario` (version anterior) se dejó intacta como respaldo; ya no se usa.
