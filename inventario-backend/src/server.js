@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import multipart from '@fastify/multipart';
+import rateLimit from '@fastify/rate-limit';
 
 import { env } from './config/env.js';
 import { AppError } from './lib/errors.js';
@@ -14,17 +15,36 @@ import usuarioRoutes from './routes/usuarios.js';
 import rolRoutes from './routes/roles.js';
 
 const fastify = Fastify({
+  // Railway esta detras de un proxy: permite obtener la IP real del cliente.
+  trustProxy: true,
   logger:
     env.nodeEnv === 'development'
       ? { transport: { target: 'pino-pretty', options: { translateTime: 'HH:MM:ss', ignore: 'pid,hostname' } } }
       : true,
 });
 
+const ORIGENES_PERMITIDOS = [
+  'https://disfracesrosaelvira.github.io',
+  'http://localhost:5173',
+  'http://localhost:4173',
+];
+const origenes =
+  !env.corsOrigin || env.corsOrigin === '*'
+    ? ORIGENES_PERMITIDOS
+    : env.corsOrigin.split(',').map((o) => o.trim()).filter(Boolean);
+
 await fastify.register(helmet, { contentSecurityPolicy: false });
 await fastify.register(cors, {
-  origin: env.corsOrigin === '*' ? true : env.corsOrigin.split(',').map((o) => o.trim()),
+  origin: origenes,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 });
 await fastify.register(multipart, { limits: { fileSize: 15 * 1024 * 1024 } });
+await fastify.register(rateLimit, {
+  max: 200,
+  timeWindow: '1 minute',
+  keyGenerator: (request) => request.ip,
+});
 
 fastify.setErrorHandler((error, request, reply) => {
   if (error instanceof AppError) {
