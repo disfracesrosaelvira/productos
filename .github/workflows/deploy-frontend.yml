@@ -38,6 +38,15 @@ jobs:
           cache-dependency-path: inventario-frontend/package-lock.json
       - run: npm ci
       - run: npm run build
+      - name: Build catálogo público (sin login)
+        run: npm run build:publico
+        env:
+          VITE_MODO_PUBLICO: 'true'
+          VITE_BASE: /${{ github.event.repository.name }}/publico/
+      - name: Combinar build público
+        run: |
+          mkdir -p dist/publico
+          cp -r dist-publico/. dist/publico/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: inventario-frontend/dist

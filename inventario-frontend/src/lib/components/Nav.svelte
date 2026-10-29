@@ -1,5 +1,6 @@
 <script>
   import { auth } from '../auth.svelte.js'
+  import { MODO_PUBLICO, URL_STAFF } from '../config.js'
   import { router, navegar } from '../router.svelte.js'
   import { cargarPerfil, limpiarPerfil, perfilActual } from '../perfil.svelte.js'
   import UsuariosDrawer from './UsuariosDrawer.svelte'
@@ -14,12 +15,25 @@
   let menuAbierto = $state(false)
 
   $effect(() => {
+    if (MODO_PUBLICO) return
     const usuario = auth.usuario
     if (usuario) cargarPerfil(usuario.id)
     else limpiarPerfil()
   })
 </script>
 
+{#if MODO_PUBLICO}
+  <header class="bg-slate-900 text-white sticky top-0 z-20">
+    <div class="max-w-6xl mx-auto px-2 sm:px-4 min-h-[3.5rem] py-1.5 flex items-center gap-2">
+      <button
+        class="px-2 sm:px-3 py-1.5 rounded text-sm bg-slate-700 whitespace-nowrap"
+        onclick={() => navegar('/')}>Catálogo</button>
+      <a
+        href={URL_STAFF}
+        class="ml-auto px-2 sm:px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-sm whitespace-nowrap">Ingresar</a>
+    </div>
+  </header>
+{:else}
 <header class="bg-slate-900 text-white sticky top-0 z-20">
   <div
     class="max-w-6xl mx-auto px-2 sm:px-4 min-h-[3.5rem] py-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -64,3 +78,4 @@
 </header>
 
 <UsuariosDrawer abierto={menuAbierto} oncerrar={() => (menuAbierto = false)} />
+{/if}

@@ -1,5 +1,6 @@
 <script>
   import { auth } from './lib/auth.svelte.js'
+  import { MODO_PUBLICO } from './lib/config.js'
   import { router } from './lib/router.svelte.js'
   import Nav from './lib/components/Nav.svelte'
   import Login from './routes/Login.svelte'
@@ -25,24 +26,37 @@
   }
 
   const actual = $derived(match(router.ruta))
+  // En modo público solo se permite catálogo y detalle; el resto redirige al catálogo.
+  const vista = $derived(
+    MODO_PUBLICO && actual.vista !== 'detalle' ? { vista: 'catalogo' } : actual,
+  )
 </script>
 
-{#if auth.cargando}
+{#if MODO_PUBLICO}
+  <Nav />
+  <main class="pb-12">
+    {#if vista.vista === 'detalle'}
+      {#key vista.id}<Detalle id={vista.id} />{/key}
+    {:else}
+      <Catalogo />
+    {/if}
+  </main>
+{:else if auth.cargando}
   <div class="min-h-screen flex items-center justify-center text-slate-500">Cargando…</div>
 {:else if !auth.autenticado}
   <Login />
 {:else}
   <Nav />
   <main class="pb-12">
-    {#if actual.vista === 'catalogo'}
+    {#if vista.vista === 'catalogo'}
       <Catalogo />
-    {:else if actual.vista === 'detalle'}
-      {#key actual.id}<Detalle id={actual.id} />{/key}
-    {:else if actual.vista === 'editar'}
-      {#key actual.id}<Editar id={actual.id} />{/key}
-    {:else if actual.vista === 'ventas'}
+    {:else if vista.vista === 'detalle'}
+      {#key vista.id}<Detalle id={vista.id} />{/key}
+    {:else if vista.vista === 'editar'}
+      {#key vista.id}<Editar id={vista.id} />{/key}
+    {:else if vista.vista === 'ventas'}
       <Ventas />
-    {:else if actual.vista === 'reportes'}
+    {:else if vista.vista === 'reportes'}
       <Reportes />
     {/if}
   </main>

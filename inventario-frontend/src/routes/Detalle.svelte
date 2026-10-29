@@ -1,8 +1,8 @@
 <script>
   import { onMount } from 'svelte'
   import { api } from '../lib/api.js'
+  import { MODO_PUBLICO } from '../lib/config.js'
   import { navegar } from '../lib/router.svelte.js'
-  import { supabase } from '../lib/supabase.js'
   import { soles, fecha } from '../lib/format.js'
   import Lightbox from '../lib/components/Lightbox.svelte'
 
@@ -27,7 +27,9 @@
       const imgs = producto.product_images ?? []
       const prim = imgs.find((i) => i.is_primary) ?? imgs[0]
       principal = prim?.image_url ?? producto.image_url ?? ''
-      movimientos = await api.listarMovimientos({ product_id: id }).catch(() => [])
+      movimientos = MODO_PUBLICO
+        ? []
+        : await api.listarMovimientos({ product_id: id }).catch(() => [])
     } catch (e) {
       error = e.message
     } finally {
@@ -47,6 +49,8 @@
 
   onMount(async () => {
     await cargar()
+    if (MODO_PUBLICO) return
+    const { supabase } = await import('../lib/supabase.js')
     const canal = supabase
       .channel(`producto-${id}`)
       .on(
@@ -144,6 +148,7 @@
           </div>
         </div>
 
+        {#if !MODO_PUBLICO}
         <div>
           <h2 class="font-medium mb-2">Movimientos de stock</h2>
           {#if movimientos.length === 0}
@@ -175,7 +180,9 @@
             </div>
           {/if}
         </div>
+        {/if}
 
+        {#if !MODO_PUBLICO}
         <div class="flex gap-2">
           <button
             class="rounded bg-slate-900 text-white px-4 py-2 text-sm hover:bg-slate-800"
@@ -184,6 +191,7 @@
             class="rounded border border-red-300 text-red-600 px-4 py-2 text-sm hover:bg-red-50"
             onclick={eliminar}>Eliminar</button>
         </div>
+        {/if}
       </div>
     </div>
   {/if}

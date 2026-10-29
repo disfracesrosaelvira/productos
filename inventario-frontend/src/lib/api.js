@@ -1,8 +1,10 @@
+import { MODO_PUBLICO } from './config.js'
 import { supabase } from './supabase.js'
 
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 async function cabecerasAuth() {
+  if (MODO_PUBLICO) return {}
   const { data } = await supabase.auth.getSession()
   const token = data.session?.access_token
   return token ? { Authorization: `Bearer ${token}` } : {}

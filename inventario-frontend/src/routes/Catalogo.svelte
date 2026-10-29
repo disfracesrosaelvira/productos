@@ -1,8 +1,8 @@
 <script>
   import { onMount } from 'svelte'
   import { api, listarCategorias } from '../lib/api.js'
+  import { MODO_PUBLICO } from '../lib/config.js'
   import { navegar } from '../lib/router.svelte.js'
-  import { supabase } from '../lib/supabase.js'
   import { soles } from '../lib/format.js'
 
   let productos = $state([])
@@ -124,22 +124,27 @@
     }
     await cargar()
 
-    const canal = supabase
-      .channel('catalogo')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'variants' }, cargar)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, cargar)
-      .subscribe()
+    if (!MODO_PUBLICO) {
+      const { supabase } = await import('../lib/supabase.js')
+      const canal = supabase
+        .channel('catalogo')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'variants' }, cargar)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, cargar)
+        .subscribe()
 
-    return () => supabase.removeChannel(canal)
+      return () => supabase.removeChannel(canal)
+    }
   })
 </script>
 
 <div class="max-w-6xl mx-auto p-4 space-y-4">
   <div class="flex items-center justify-between gap-3 flex-wrap">
     <h1 class="text-xl font-semibold">Catálogo de disfraces</h1>
-    <button
-      class="rounded bg-slate-900 text-white px-4 py-2 text-sm hover:bg-slate-800"
-      onclick={() => navegar('/producto/nuevo')}>+ Nuevo producto</button>
+    {#if !MODO_PUBLICO}
+      <button
+        class="rounded bg-slate-900 text-white px-4 py-2 text-sm hover:bg-slate-800"
+        onclick={() => navegar('/producto/nuevo')}>+ Nuevo producto</button>
+    {/if}
   </div>
 
   <form class="bg-white rounded-lg shadow p-3 flex gap-2 flex-wrap items-center" onsubmit={buscar}>
