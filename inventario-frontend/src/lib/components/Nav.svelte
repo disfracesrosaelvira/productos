@@ -30,7 +30,7 @@
         onclick={() => navegar('/')}>Catálogo</button>
       <a
         href={URL_STAFF}
-        class="ml-auto px-2 sm:px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-sm whitespace-nowrap">Ingresar</a>
+        class="ml-auto px-2 sm:px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-sm whitespace-nowrap">Login</a>
     </div>
   </header>
 {:else}
